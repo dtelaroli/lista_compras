@@ -1,0 +1,42 @@
+<!--
+  This template loads for the 'tab.friend-detail' state (app.js)
+  'friend' is a $scope variable created in the FriendsCtrl controller (controllers.js)
+  The FriendsCtrl pulls data from the Friends service (service.js)
+  The Friends service returns an array of friend data
+-->
+<ion-view view-title="{{list.name}}">
+  <ion-content class="padding">
+    <p>
+      {{list.name}}
+    </p>
+
+    <ion-list>
+      <ion-item class="item-remove-animate item-icon-right item-toggle" ng-repeat="product in list.products" 
+        type="item-text-wrap">
+        <h2>{{product.name}}</h2>
+
+        <label class="toggle toggle-assertive">
+          <input type="checkbox" ng-model="product.checked">
+          <div class="track">
+            <div class="handle"></div>
+          </div>
+        </label>
+        
+        <ion-option-button class="button-assertive" ng-click="remove(product)">
+          Apagar
+        </ion-option-button>
+      </ion-item>
+    </ion-list>
+
+    <div class="list">
+      <div class="item item-input-inset">
+        <label class="item-input-wrapper">
+          <input type="text" placeholder="Nome da Lista" ng-model="product.name">
+        </label>
+        <button class="button button-small" ng-click="add()">
+          Adicionar
+        </button>      
+      </div>
+    </div>
+  </ion-content>
+</ion-view>

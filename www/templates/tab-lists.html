@@ -1,0 +1,28 @@
+<ion-view view-title="Listas">
+  <ion-content>
+    <ion-list>
+      <ion-item class="item-remove-animate item-icon-right" ng-repeat="list in lists" 
+        type="item-text-wrap" href="#/tab/lists/{{list.id}}">
+        <h2>{{list.name}}</h2>
+        <p>{{list.name}}</p>
+        <ion-option-button class="button-energized" ng-click="archive(list)">
+          Arquivar
+        </ion-option-button>
+        <ion-option-button class="button-assertive" ng-click="remove(list)">
+          Apagar
+        </ion-option-button>
+      </ion-item>
+    </ion-list>
+
+    <div class="list">
+      <div class="item item-input-inset">
+        <label class="item-input-wrapper">
+          <input type="text" placeholder="Nome da Lista" ng-model="list.name">
+        </label>
+        <button class="button button-small" ng-click="add()">
+          Criar
+        </button>      
+      </div>
+    </div>
+  </ion-content>
+</ion-view>

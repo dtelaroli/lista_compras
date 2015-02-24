@@ -1,46 +1,110 @@
-angular.module('starter.services', [])
+angular.module('starter.services', ['webSqlWrapper'])
 
-.factory('Lists', function() {
-  var lists = [{
-    id: 0,
-    name: 'Semanal',
-    products: [{id: 0, listId: 0, name: 'Batata', checked: false}]
-  }, {
-    id: 1,
-    name: 'Churrasco',
-    products: [{id: 1, listId: 1, name: 'Picanha', checked: true}]
-  }];
-
-  return {
-    all: function() {
-      return lists;
-    },
-    remove: function(list) {
-      lists.splice(lists.indexOf(list), 1);
-    },
-    add: function(list) {
-      var id;
-      var last = lists.length - 1;
-      if(last < 0) {
-        id = 0;
-      }
-      else {
-        id = lists[last].id + 1;
-      }
-
-      list.id = id;
-      lists.push(list);
-    },
-    get: function(listId) {
-      for (var i in lists) {
-        if (lists[i].id == listId) {
-          return lists[i];
-        }
-      }
-      return null;
-    }
-  }
+.run(function(DB) {
+  DB.init();
 })
+
+.factory('DB', function($q, $window) {
+    var self = {
+      execute: function(query, bindings) {
+        bindings = typeof bindings !== 'undefined' ? bindings : [];
+        var deferred = $q.defer();
+         
+        self.db.transaction(function(transaction) {
+          transaction.executeSql(query, bindings, function(transaction, result) {
+            deferred.resolve(result);
+          }, function(transaction, error) {
+            deferred.reject(error);
+          });
+        });
+       
+        return deferred.promise;
+      },
+
+      fetchAll: function(result) {
+        var output = [];       
+        for (var i = 0; i < result.rows.length; i++) {
+          output.push(result.rows.item(i));
+        }
+        return output;
+      },
+
+      fetch: function(result) {
+        return result.rows.item(0);
+      },
+    
+      init: function() {
+        self.db = $window.sqlitePlugin.openDatabase({name: "lista_compra"});
+
+        self.db.transaction(function(tx) {
+            // tx.executeSql('DROP TABLE IF EXISTS cards');
+          tx.executeSql('CREATE TABLE IF NOT EXISTS lists (id integer primary key, name varchar(20), archived boolean);');
+          tx.executeSql('CREATE TABLE IF NOT EXISTS products (id integer primary key, name varchar(20));');
+        }, function(e) {
+          console.error(e);
+        }); 
+      }
+    };
+
+    return self;
+})
+
+.factory('$db', ['DB', function(DB) {  
+  var defaults = {
+    sqls: {
+      all: 'SELECT * FROM %NAME%',
+      get: 'SELECT * FROM %NAME% WHERE id = ?',
+      add: 'INSERT INTO %NAME% (name) VALUES (?)',
+      remove: 'DELETE FROM %NAME% WHERE id = ?'
+    },
+
+    parse: function(extended_sqls) {
+      return angular.extend({}, defaults.sqls, extended_sqls);
+    }
+  };
+
+  function replace_sql(sql, name) {
+    return sql.replace('%NAME%', name);
+  }
+
+  var dbFactory = function(name, extended_sqls) {
+    var sqls = defaults.parse(extended_sqls);
+
+    var self = {
+      all: function() {
+        return DB.execute(replace_sql(sqls.all, name)).then(function(result) {
+          return DB.fetchAll(result);
+        });
+      },
+
+      get: function(id) {
+        return DB.execute(replace_sql(defaults.sqls.get, name), [id]).then(function(result){ 
+          return DB.fetch(result);
+        });
+      },
+
+      add: function(list) {
+        return DB.execute(replace_sql(sqls.add, name), [list.name]).then(function(result) {
+          return result;
+        });
+      },
+
+      remove: function(list) {
+        return DB.execute(replace_sql(sqls.remove, name), [list.id]).then(function(result) {
+          return result;
+        });
+      }
+    };
+
+    return self;
+  };
+
+  return dbFactory;
+}])
+
+.factory('Lists', ['$db', function($db) {
+  return $db('lists');
+}])
 
 /**
  * A simple example service that returns some data.

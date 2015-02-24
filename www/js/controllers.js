@@ -5,7 +5,9 @@ angular.module('starter.controllers', [])
 .controller('ListsCtrl', function($scope, Lists) {
   var self = {
     init: function() {
-      $scope.lists = Lists.all();
+      Lists.all().then(function(result) {
+        $scope.lists = result;  
+      });
       $scope.list = {};
     }
   };
@@ -17,18 +19,24 @@ angular.module('starter.controllers', [])
   };
 
   $scope.archive = function(list) {
-    Lists.remove(list);
+    Lists.remove(list).then(function() {
+      self.init();
+    });
   };
 
   $scope.remove = function(list) {
-    Lists.remove(list);
+    Lists.remove(list).then(function() {
+      self.init();
+    });
   };
 })
 
 .controller('ListDetailCtrl', function($scope, $stateParams, Lists) {
   var self = {
     init: function() {
-      $scope.list = Lists.get($stateParams.listId);
+      Lists.get($stateParams.listId).then(function(result) {
+        $scope.list = result;  
+      });
       $scope.product = {};
     }
   };
@@ -40,11 +48,15 @@ angular.module('starter.controllers', [])
   };
 
   $scope.archive = function(list) {
-    Lists.remove(list);
+    Lists.remove(list).then(function() {
+      self.init();
+    });
   };
 
   $scope.remove = function(list) {
-    Lists.remove(list);
+    Lists.remove(list).then(function() {
+      self.init();
+    });
   };
 })
 

@@ -1,6 +1,6 @@
 var List, Product;
 
-angular.module('starter.services', ['webSqlWrapper'])
+angular.module('starter.services', [])
 
 .run(function(DB) {
   DB.init();
@@ -8,33 +8,6 @@ angular.module('starter.services', ['webSqlWrapper'])
 
 .factory('DB', function($q, $window) {
     var self = {
-      execute: function(query, bindings) {
-        bindings = typeof bindings !== 'undefined' ? bindings : [];
-        var deferred = $q.defer();
-         
-        self.db.transaction(function(transaction) {
-          transaction.executeSql(query, bindings, function(transaction, result) {
-            deferred.resolve(result);
-          }, function(transaction, error) {
-            deferred.reject(error);
-          });
-        });
-       
-        return deferred.promise;
-      },
-
-      fetchAll: function(result) {
-        var output = [];       
-        for (var i = 0; i < result.rows.length; i++) {
-          output.push(result.rows.item(i));
-        }
-        return output;
-      },
-
-      fetch: function(result) {
-        return result.rows.item(0);
-      },
-    
       init: function() {
         persistence.store.websql.config(persistence, 'Lista', 'Lista de Compra', 5 * 1024 * 1024);        
 
@@ -51,41 +24,58 @@ angular.module('starter.services', ['webSqlWrapper'])
         Product.hasMany('lists', List, 'products');
 
         persistence.schemaSync(function(tx) {});
-
-        // var list = new List({name: 'Foo'});
-        // var product = new Product({name: 'Bar'});
-        // list.products.add(product);
-
-        // persistence.add(list);
-        // persistence.transaction(function(tx) {
-        //   persistence.flush(tx, function() {
-        //     console.log('Done flushing!');
-        //   });
-        // });
-
-        // self.db = $window.sqlitePlugin.openDatabase({name: "lista_compra"});
-
-        // self.db.transaction(function(tx) {
-        //   // tx.executeSql('DROP TABLE lists');
-        //   tx.executeSql('CREATE TABLE IF NOT EXISTS lists (id integer primary key, name varchar(20), archived boolean);');
-        //   tx.executeSql('CREATE TABLE IF NOT EXISTS products (id integer primary key, name varchar(20));');
-        //   tx.executeSql('CREATE TABLE IF NOT EXISTS lists_products (list_id integer, product_id integer);');
-
-        // }, function(e) {
-        //   console.error(e);
-        // }); 
       }
     };
 
     return self;
 })
 
-.factory('List', [function() {
-  return List;
+.factory('List', ['$q', function($q) {  
+  return {
+    all: function() {
+      var deferred = $q.defer();
+      List.all().list(function (lists) {
+        deferred.resolve(lists);
+      });
+      return deferred.promise;
+    },
+
+    get: function(id) {
+      var deferred = $q.defer();
+      List.load(id, function (list) {
+        deferred.resolve(list);
+      });
+      return deferred.promise;
+    },
+    
+    save: function(params) {
+      var deferred = $q.defer();  
+      if(params.id === undefined) {
+        var list = new List(params);
+        persistence.add(list);
+        deferred.resolve(list);
+      }
+      else {
+        persistence.flush(function() {
+          deferred.resolve(params);
+        });
+      }
+      return deferred.promise;
+    },
+    
+    remove: function(list) {
+      var deferred = $q.defer();
+      persistence.remove(list);
+      persistence.flush(function() {
+        deferred.resolve(true);
+      });
+      return deferred.promise;
+    }
+  };
 }])
 
-.factory('Product', ['$db', function($db) {
-  return $db('products');
+.factory('Product', [function() {
+  return Product;
 }])
 
 /**

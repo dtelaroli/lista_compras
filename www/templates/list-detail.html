@@ -10,6 +10,9 @@
       {{list.name}}
     </p>
 
+    <button class="button-assertive" type="button" ng-click="update(list)">
+      Atualizar
+    </button>
     <ion-list>
       <ion-item class="item-remove-animate item-icon-right item-toggle" ng-repeat="product in products" 
         type="item-text-wrap">
@@ -21,7 +24,7 @@
             <div class="handle"></div>
           </div>
         </label>
-        
+                
         <ion-option-button class="button-assertive" ng-click="remove(product)">
           Apagar
         </ion-option-button>

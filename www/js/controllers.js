@@ -5,7 +5,7 @@ angular.module('starter.controllers', [])
 .controller('ListsCtrl', ['$scope', 'List', function($scope, List) {
   var self = {
     init: function() {
-      List.all().list(function(result) {
+      List.all().then(function(result) {
         $scope.lists = result;
       });
       $scope.list = {};
@@ -14,8 +14,9 @@ angular.module('starter.controllers', [])
   self.init();
 
   $scope.add = function() {    
-    List.add($scope.list);
-    self.init();
+    List.save($scope.list).then(function() {
+      self.init();
+    });
   };
 
   $scope.archive = function(list) {
@@ -36,17 +37,19 @@ angular.module('starter.controllers', [])
     init: function() {
       List.get($stateParams.listId).then(function(result) {
         $scope.list = result;
-        Product.all().then(function(result) {
-          $scope.products = result;
-        });
       });
       $scope.product = {};
     }
   };
-  self.init();  
+  self.init();
 
-  $scope.add = function() {    
-    List.Product.add($scope.list, $scope.product);
+  $scope.update = function(list) {
+    List.save(list).then(function(result) {
+      console.log('ok', result);
+    });
+  };
+
+  $scope.add = function() {
     self.init();
   };
 

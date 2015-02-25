@@ -1,3 +1,5 @@
+var List, Product;
+
 angular.module('starter.services', ['webSqlWrapper'])
 
 .run(function(DB) {
@@ -34,76 +36,56 @@ angular.module('starter.services', ['webSqlWrapper'])
       },
     
       init: function() {
-        self.db = $window.sqlitePlugin.openDatabase({name: "lista_compra"});
+        persistence.store.websql.config(persistence, 'Lista', 'Lista de Compra', 5 * 1024 * 1024);        
 
-        self.db.transaction(function(tx) {
-            // tx.executeSql('DROP TABLE IF EXISTS cards');
-          tx.executeSql('CREATE TABLE IF NOT EXISTS lists (id integer primary key, name varchar(20), archived boolean);');
-          tx.executeSql('CREATE TABLE IF NOT EXISTS products (id integer primary key, name varchar(20));');
-        }, function(e) {
-          console.error(e);
-        }); 
+        List = persistence.define('List', {
+          name: 'TEXT',
+          archived: 'BOOL'
+        });
+
+        Product = persistence.define('Product', {
+          name: 'TEXT'
+        });
+
+        List.hasMany('products', Product, 'lists');
+        Product.hasMany('lists', List, 'products');
+
+        persistence.schemaSync(function(tx) {});
+
+        // var list = new List({name: 'Foo'});
+        // var product = new Product({name: 'Bar'});
+        // list.products.add(product);
+
+        // persistence.add(list);
+        // persistence.transaction(function(tx) {
+        //   persistence.flush(tx, function() {
+        //     console.log('Done flushing!');
+        //   });
+        // });
+
+        // self.db = $window.sqlitePlugin.openDatabase({name: "lista_compra"});
+
+        // self.db.transaction(function(tx) {
+        //   // tx.executeSql('DROP TABLE lists');
+        //   tx.executeSql('CREATE TABLE IF NOT EXISTS lists (id integer primary key, name varchar(20), archived boolean);');
+        //   tx.executeSql('CREATE TABLE IF NOT EXISTS products (id integer primary key, name varchar(20));');
+        //   tx.executeSql('CREATE TABLE IF NOT EXISTS lists_products (list_id integer, product_id integer);');
+
+        // }, function(e) {
+        //   console.error(e);
+        // }); 
       }
     };
 
     return self;
 })
 
-.factory('$db', ['DB', function(DB) {  
-  var defaults = {
-    sqls: {
-      all: 'SELECT * FROM %NAME%',
-      get: 'SELECT * FROM %NAME% WHERE id = ?',
-      add: 'INSERT INTO %NAME% (name) VALUES (?)',
-      remove: 'DELETE FROM %NAME% WHERE id = ?'
-    },
-
-    parse: function(extended_sqls) {
-      return angular.extend({}, defaults.sqls, extended_sqls);
-    }
-  };
-
-  function replace_sql(sql, name) {
-    return sql.replace('%NAME%', name);
-  }
-
-  var dbFactory = function(name, extended_sqls) {
-    var sqls = defaults.parse(extended_sqls);
-
-    var self = {
-      all: function() {
-        return DB.execute(replace_sql(sqls.all, name)).then(function(result) {
-          return DB.fetchAll(result);
-        });
-      },
-
-      get: function(id) {
-        return DB.execute(replace_sql(defaults.sqls.get, name), [id]).then(function(result){ 
-          return DB.fetch(result);
-        });
-      },
-
-      add: function(list) {
-        return DB.execute(replace_sql(sqls.add, name), [list.name]).then(function(result) {
-          return result;
-        });
-      },
-
-      remove: function(list) {
-        return DB.execute(replace_sql(sqls.remove, name), [list.id]).then(function(result) {
-          return result;
-        });
-      }
-    };
-
-    return self;
-  };
-
-  return dbFactory;
+.factory('List', [function() {
+  return List;
 }])
 
-.factory('Lists', ['$db', function($db) {
-  return $db('lists');
+.factory('Product', ['$db', function($db) {
+  return $db('products');
 }])
 
 /**

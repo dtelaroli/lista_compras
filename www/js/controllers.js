@@ -2,11 +2,11 @@ angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($scope) {})
 
-.controller('ListsCtrl', function($scope, Lists) {
+.controller('ListsCtrl', ['$scope', 'List', function($scope, List) {
   var self = {
     init: function() {
-      Lists.all().then(function(result) {
-        $scope.lists = result;  
+      List.all().list(function(result) {
+        $scope.lists = result;
       });
       $scope.list = {};
     }
@@ -14,28 +14,31 @@ angular.module('starter.controllers', [])
   self.init();
 
   $scope.add = function() {    
-    Lists.add($scope.list);
+    List.add($scope.list);
     self.init();
   };
 
   $scope.archive = function(list) {
-    Lists.remove(list).then(function() {
+    List.remove(list).then(function() {
       self.init();
     });
   };
 
   $scope.remove = function(list) {
-    Lists.remove(list).then(function() {
+    List.remove(list).then(function() {
       self.init();
     });
   };
-})
+}])
 
-.controller('ListDetailCtrl', function($scope, $stateParams, Lists) {
+.controller('ListDetailCtrl', ['$scope', '$stateParams', 'List', 'Product', function($scope, $stateParams, List, Product) {
   var self = {
     init: function() {
-      Lists.get($stateParams.listId).then(function(result) {
-        $scope.list = result;  
+      List.get($stateParams.listId).then(function(result) {
+        $scope.list = result;
+        Product.all().then(function(result) {
+          $scope.products = result;
+        });
       });
       $scope.product = {};
     }
@@ -43,22 +46,16 @@ angular.module('starter.controllers', [])
   self.init();  
 
   $scope.add = function() {    
-    $scope.list.products.push($scope.product);
+    List.Product.add($scope.list, $scope.product);
     self.init();
   };
 
-  $scope.archive = function(list) {
-    Lists.remove(list).then(function() {
+  $scope.remove = function(product) {
+    Product.remove(product).then(function() {
       self.init();
     });
   };
-
-  $scope.remove = function(list) {
-    Lists.remove(list).then(function() {
-      self.init();
-    });
-  };
-})
+}])
 
 .controller('FriendsCtrl', function($scope, Friends) {
   $scope.friends = Friends.all();

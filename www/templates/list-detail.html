@@ -8,6 +8,7 @@
   <ion-content class="padding">
     <p>
       {{list.name}}
+      {{products | json}}
     </p>
 
     <button class="button-assertive" type="button" ng-click="update(list)">
@@ -34,7 +35,7 @@
     <div class="list">
       <div class="item item-input-inset">
         <label class="item-input-wrapper">
-          <input type="text" placeholder="Nome da Lista" ng-model="product.name">
+          <input type="text" placeholder="Nome do produto" ng-model="product.name">
         </label>
         <button class="button button-small" ng-click="add()">
           Adicionar

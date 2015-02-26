@@ -36,56 +36,90 @@ angular.module('starter.services', [])
 }])
 
 .factory('$entity', ['$model', '$q', function($model, $q) {
-  return function(name, extras) {
-    var Entity = $model[name]; 
-    var self = {
-      all: function() {
-        var deferred = $q.defer();
-        Entity.all().list(function (list) {
-          deferred.resolve(list);
-        });
-        return deferred.promise;
-      },
-
-      get: function(id) {
-        var deferred = $q.defer();
-        Entity.load(id, function (instance) {
-          deferred.resolve(instance);
-        });
-        return deferred.promise;
-      },
-      
-      save: function(params) {
-        var deferred = $q.defer();  
-        if(params.id === undefined) {
-          var instance = new Entity(params);
-          persistence.add(instance);
-          deferred.resolve(instance);
-        }
-        else {
-          persistence.flush(function() {
-            deferred.resolve(params);
+    function entityFactory(name, extras) {      
+      var model = $model[name]; 
+      var defaults = {
+        all: function() {
+          var deferred = $q.defer();
+          model.all().list(function (list) {
+            deferred.resolve(new Entity(list));
           });
-        }
-        return deferred.promise;
-      },
-      
-      remove: function(instance) {
-        var deferred = $q.defer();
-        persistence.remove(instance);
-        persistence.flush(function() {
-          deferred.resolve(true);
-        });
-        return deferred.promise;
-      }
-    };
+          return deferred.promise;
+        },
 
-    return angular.extend({}, self, extras);
-  };
+        get: function(id) {
+          var deferred = $q.defer();
+          model.load(id, function (instance) {
+            deferred.resolve(new Entity(instance));
+          });
+          return deferred.promise;
+        },
+        
+        save: function(params) {
+          var deferred = $q.defer();
+          var instance = new model(params);
+          persistence.add(instance);
+          persistence.flush();
+          deferred.resolve(instance);
+          return deferred.promise;
+        },
+        
+        remove: function(instance) {
+          var deferred = $q.defer();
+          persistence.remove(instance);
+          persistence.flush(function() {
+            deferred.resolve(true);
+          });
+          return deferred.promise;
+        }
+      };
+
+      function Entity(params) {
+        angular.forEach(params, function(param, name) {
+          this[name] = param;
+        }, this);
+      };
+
+      var actions = angular.extend({}, defaults, extras);
+
+      angular.forEach(actions, function(action, name) {
+        Entity[name] = function(params, callback) {
+          var result = action.call(this, params);
+          result.then(function(value) {
+            if(callback !== undefined) {
+              callback.call(this, value);
+            }
+          });
+          return result.$promise || result;
+        };
+
+        Entity.prototype['$' + name] = function(params, callback) {
+          if(typeof params === 'function') {
+            callback = params;
+            params = this;
+          }
+          return Entity[name].call(this, params, callback);
+        };
+      });
+
+      return Entity;
+    }
+
+    return entityFactory;
 }])
 
-.factory('List', ['$entity', function($entity) {
-  return $entity('List');
+.factory('List', ['$q', '$entity', function($q, $entity) {
+  var list = $entity('List', {
+    add_product: function(product) {
+      var deferred = $q.defer();
+      this.products.add(product);
+      persistence.flush(function() {
+        deferred.resolve(product);
+      });
+      return deferred.promise;
+    }
+  });
+  return list;
 }])
 
 .factory('Product', ['$entity', function($entity) {

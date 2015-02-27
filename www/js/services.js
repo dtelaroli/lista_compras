@@ -4,23 +4,23 @@ angular.module('persistence', [])
   var self = {
     init: function(config) {
       persistence.store.websql.config(persistence, config.name, config.description, config.size);
-      self.config = config;
+      self.models = config.models;
       if(config.models.init !== undefined) {
         config.models.init();
       }
-      persistence.schemaSync(function(tx) {});
+      persistence.schemaSync();
     },
 
-    models: function(name) {
-      return self.config.models[name];
+    model: function(name) {
+      return self.models[name];
     }
   };
   return self;
 }])
 
 .factory('$entity', ['$db', '$q', function($db, $q) {
-  function entityFactory(name, extras) {     
-    var Entity = $db.models(name);
+  function modelFactory(name, extras) {     
+    var Entity = $db.model(name);
     var defaults = {
       all: function() {
         var deferred = $q.defer();
@@ -105,7 +105,7 @@ angular.module('persistence', [])
     return Model;
   }
 
-  return entityFactory;
+  return modelFactory;
 }]);
 
 angular.module('starter.services', ['persistence'])

@@ -110,13 +110,15 @@ angular.module('persistence', [])
 
 angular.module('starter.services', ['persistence'])
 
-.run(['$db', '$model', function($db, $model) {
+.run(['$db', '$model', '$ionicPlatform', function($db, $model, $ionicPlatform) {
   $db.init({
     name: 'ListaCompras', 
     description: 'Lista de Compra', 
     size: 5 * 1024 * 1024, 
     models: $model
   });
+
+  ionic.Platform.isFullScreen = true;
 }])
 
 .factory('$model', [function() {

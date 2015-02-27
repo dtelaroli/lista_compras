@@ -14,15 +14,17 @@
       </ion-item>
     </ion-list>
 
-    <div class="list">
-      <div class="item item-input-inset">
-        <label class="item-input-wrapper">
-          <input type="text" placeholder="Nome da Lista" ng-model="list.name">
-        </label>
-        <button class="button button-small" ng-click="add()">
-          Criar
-        </button>      
+    <form name="form" ng-submit="add()">
+      <div class="list">
+        <div class="item item-input-inset">
+          <label class="item-input-wrapper">
+            <input type="text" placeholder="Nome da Lista" ng-model="list.name" required>
+          </label>
+          <button class="button button-small" ng-disabled="list.name == null">
+            Criar
+          </button>      
+        </div>
       </div>
-    </div>
+    </form>    
   </ion-content>
 </ion-view>

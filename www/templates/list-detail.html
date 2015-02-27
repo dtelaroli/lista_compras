@@ -8,39 +8,23 @@
   <ion-content class="padding">
     <p>
       {{list.name}}
-      {{products | json}}
     </p>
 
-    <button class="button-assertive" type="button" ng-click="update(list)">
-      Atualizar
-    </button>
-    <ion-list>
-      <ion-item class="item-remove-animate item-icon-right item-toggle" ng-repeat="product in products" 
-        type="item-text-wrap">
-        <h2>{{product.name}}</h2>
+    <ion-checkbox ng-repeat="product in products" ng-model="product.archived" ng-change="update()">
+      {{product.name}}
+    </ion-checkbox>
 
-        <label class="toggle toggle-assertive">
-          <input type="checkbox" ng-model="product.checked">
-          <div class="track">
-            <div class="handle"></div>
-          </div>
-        </label>
-                
-        <ion-option-button class="button-assertive" ng-click="remove(product)">
-          Apagar
-        </ion-option-button>
-      </ion-item>
-    </ion-list>
-
-    <div class="list">
-      <div class="item item-input-inset">
-        <label class="item-input-wrapper">
-          <input type="text" placeholder="Nome do produto" ng-model="product.name">
-        </label>
-        <button class="button button-small" ng-click="add()">
-          Adicionar
-        </button>      
+    <form name="form" ng-submit="add()">
+      <div class="list">
+        <div class="item item-input-inset">
+            <label class="item-input-wrapper">
+              <input type="text" placeholder="Nome do produto" ng-model="product.name" required>
+            </label>
+            <button class="button button-small" ng-disabled="product.name == null">
+              Adicionar
+            </button>
+        </div>
       </div>
-    </div>
+    </form>
   </ion-content>
 </ion-view>

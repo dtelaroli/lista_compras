@@ -1,111 +1,143 @@
-angular.module('starter.services', [])
-
-.run(['$db', '$model', function($db, $model) {
-  $db.init();
-  $model.init();
-}])
+angular.module('persistence', [])
 
 .factory('$db', [function() {
-    var self = {
-      init: function() {
-        persistence.store.websql.config(persistence, 'Lista', 'Lista de Compra', 5 * 1024 * 1024);        
+  var self = {
+    init: function(config) {
+      persistence.store.websql.config(persistence, config.name, config.description, config.size);
+      self.config = config;
+      if(config.models.init !== undefined) {
+        config.models.init();
+      }
+      persistence.schemaSync(function(tx) {});
+    },
+
+    models: function(name) {
+      return self.config.models[name];
+    }
+  };
+  return self;
+}])
+
+.factory('$entity', ['$db', '$q', function($db, $q) {
+  function entityFactory(name, extras) {     
+    var Entity = $db.models(name);
+    var defaults = {
+      all: function() {
+        var deferred = $q.defer();
+        Entity.all().list(function (list) {
+          var all = [];
+          angular.forEach(list, function(item) {
+            this.push(new Model(item));
+          }, all)
+          deferred.resolve(all);
+        });
+        return deferred.promise;
+      },
+
+      get: function(id) {
+        var deferred = $q.defer();
+        Entity.load(id, function (instance) {
+          deferred.resolve(new Model(instance));
+        });
+        return deferred.promise;
+      },
+      
+      save: function(params) {
+        var deferred = $q.defer();
+        var instance = new Entity(params);
+        persistence.add(instance);
+        persistence.flush();
+        deferred.resolve(instance);
+        return deferred.promise;
+      },
+      
+      remove: function(instance) {
+        var deferred = $q.defer();
+        persistence.remove(instance);
+        persistence.flush(function(flushed) {
+          deferred.resolve(flushed);
+        });
+        return deferred.promise;
+      },
+
+      flush: function() {
+        var deferred = $q.defer();
+        persistence.flush(function(flushed) {
+          deferred.resolve(flushed);
+        });
+        return deferred.promise;
       }
     };
 
-    return self;
-}])
-
-.factory('$model', [function() {
-    var self = {
-      init: function() { 
-        self.List.hasMany('products', self.Product, 'lists');
-        self.Product.hasMany('lists', self.List, 'products');
-
-        persistence.schemaSync(function(tx) {});
-      },
-      List: persistence.define('List', {
-        name: 'TEXT',
-        archived: 'BOOL'
-      }),
-      Product: persistence.define('Product', {
-        name: 'TEXT'
-      })
+    function Model(params) {
+      angular.forEach(params, function(param, name) {
+        this[name] = param;
+      }, this);
     };
 
-    return self;
-}])
+    var actions = angular.extend({}, defaults, extras);
 
-.factory('$entity', ['$model', '$q', function($model, $q) {
-    function entityFactory(name, extras) {      
-      var model = $model[name]; 
-      var defaults = {
-        all: function() {
-          var deferred = $q.defer();
-          model.all().list(function (list) {
-            deferred.resolve(new Entity(list));
-          });
-          return deferred.promise;
-        },
-
-        get: function(id) {
-          var deferred = $q.defer();
-          model.load(id, function (instance) {
-            deferred.resolve(new Entity(instance));
-          });
-          return deferred.promise;
-        },
-        
-        save: function(params) {
-          var deferred = $q.defer();
-          var instance = new model(params);
-          persistence.add(instance);
-          persistence.flush();
-          deferred.resolve(instance);
-          return deferred.promise;
-        },
-        
-        remove: function(instance) {
-          var deferred = $q.defer();
-          persistence.remove(instance);
-          persistence.flush(function() {
-            deferred.resolve(true);
-          });
-          return deferred.promise;
-        }
-      };
-
-      function Entity(params) {
-        angular.forEach(params, function(param, name) {
-          this[name] = param;
-        }, this);
-      };
-
-      var actions = angular.extend({}, defaults, extras);
-
-      angular.forEach(actions, function(action, name) {
-        Entity[name] = function(params, callback) {
-          var result = action.call(this, params);
+    angular.forEach(actions, function(action, name) {
+      Model[name] = function(params, callback) {
+        var result = action.call(this, params);
+        if(result !== undefined) {
           result.then(function(value) {
             if(callback !== undefined) {
               callback.call(this, value);
             }
           });
           return result.$promise || result;
-        };
+        }
+        else if(callback !== undefined) {
+          return callback.call(this);
+        }
+      };
 
-        Entity.prototype['$' + name] = function(params, callback) {
-          if(typeof params === 'function') {
-            callback = params;
-            params = this;
-          }
-          return Entity[name].call(this, params, callback);
-        };
-      });
+      Model.prototype['$' + name] = function(params, callback) {
+        if(typeof params === 'function') {
+          callback = params;
+          params = this;
+        }
+        return Model[name].call(this, params, callback);
+      };
+    });
 
-      return Entity;
-    }
+    return Model;
+  }
 
-    return entityFactory;
+  return entityFactory;
+}]);
+
+angular.module('starter.services', ['persistence'])
+
+.run(['$db', '$model', function($db, $model) {
+  $db.init({
+    name: 'Compras', 
+    description: 'Lista de Compra', 
+    size: 5 * 1024 * 1024, 
+    models: $model
+  });
+}])
+
+.factory('$model', [function() {
+  var self = {
+    init: function() { 
+      self.List.hasMany('products', self.Product, 'lists');
+      self.Product.hasMany('lists', self.List, 'products');
+    },
+
+    List: persistence.define('List', {
+      name: 'TEXT',
+      archived: 'BOOL'
+    }),
+
+    Product: persistence.define('Product', {
+      name: 'TEXT',
+      archived: 'BOOL'
+    })
+  };
+
+  return self;
 }])
 
 .factory('List', ['$q', '$entity', function($q, $entity) {
@@ -113,8 +145,8 @@ angular.module('starter.services', [])
     add_product: function(product) {
       var deferred = $q.defer();
       this.products.add(product);
-      persistence.flush(function() {
-        deferred.resolve(product);
+      this.$flush(function() {
+        deferred.resolve(true);
       });
       return deferred.promise;
     }

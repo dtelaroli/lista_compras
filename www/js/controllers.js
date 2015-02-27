@@ -3,6 +3,9 @@ angular.module('starter.controllers', [])
 .controller('DashCtrl', function($scope) {})
 
 .controller('ListsCtrl', ['$scope', 'List', function($scope, List) {
+  $scope.lists;
+  $scope.list;
+  
   var self = {
     init: function() {
       List.all().then(function(lists) {
@@ -38,33 +41,28 @@ angular.module('starter.controllers', [])
 }])
 
 .controller('ListDetailCtrl', ['$scope', '$stateParams', 'List', 'Product', function($scope, $stateParams, List, Product) {
-  $scope.list = {};
-  $scope.products = [];
+  $scope.list;
+  $scope.product;
+
   var self = {
     init: function() {
       List.get($stateParams.listId).then(function(list) {
         $scope.list = list;
         list.products.list(function(products) {
           $scope.products = products;
-          console.log(products, [{fo: 'bar'}])
         });
         self.clear();
       });
-      // Product.all().then(function(products) {
-      //   $scope.products = products;
-      // });
     },
 
     clear: function() {
       $scope.product = new Product();
     }
-  };  
+  };
   self.init();
 
-  $scope.update = function(list) {
-    new List({name: 'bla'}).$save(function() {
-      self.init();
-    });
+  $scope.update = function() {
+    $scope.list.$flush();
   };
 
   $scope.add = function() {

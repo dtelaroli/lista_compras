@@ -4,13 +4,14 @@
   The FriendsCtrl pulls data from the Friends service (service.js)
   The Friends service returns an array of friend data
 -->
-<ion-view view-title="{{list.name}}">
+<ion-view view-title="Lista">
   <ion-content class="padding">
     <p>
       {{list.name}}
     </p>
 
-    <ion-checkbox ng-repeat="product in products" ng-model="product.archived" ng-change="update()">
+    <ion-checkbox ng-repeat="product in products" ng-model="product.ok" ng-change="update()"
+      class="item-checkbox-right">
       {{product.name}}
     </ion-checkbox>
 

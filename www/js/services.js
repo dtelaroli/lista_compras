@@ -112,7 +112,7 @@ angular.module('starter.services', ['persistence'])
 
 .run(['$db', '$model', function($db, $model) {
   $db.init({
-    name: 'Compras', 
+    name: 'ListaCompras', 
     description: 'Lista de Compra', 
     size: 5 * 1024 * 1024, 
     models: $model
@@ -133,7 +133,7 @@ angular.module('starter.services', ['persistence'])
 
     Product: persistence.define('Product', {
       name: 'TEXT',
-      archived: 'BOOL'
+      ok: 'BOOL'
     })
   };
 

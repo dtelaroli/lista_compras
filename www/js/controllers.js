@@ -5,7 +5,7 @@ angular.module('starter.controllers', [])
 .controller('ListsCtrl', ['$scope', 'List', function($scope, List) {
   $scope.lists;
   $scope.list;
-  
+
   var self = {
     init: function() {
       List.all().then(function(lists) {
@@ -15,13 +15,13 @@ angular.module('starter.controllers', [])
     },
 
     clear: function() {
-      $scope.list = new List();
+      $scope.list = {};
     }
   };
   self.init();
 
   $scope.add = function() { 
-    $scope.list.$save(function(list) {
+    new List($scope.list).$save(function(list) {
       $scope.lists.push(list);
       self.clear();
     });
@@ -56,7 +56,7 @@ angular.module('starter.controllers', [])
     },
 
     clear: function() {
-      $scope.product = new Product();
+      $scope.product = {};
     }
   };
   self.init();
@@ -66,7 +66,7 @@ angular.module('starter.controllers', [])
   };
 
   $scope.add = function() {
-    $scope.product.$save(function(saved) {
+    new Product($scope.product).$save(function(saved) {
       $scope.list.$add_product(saved);      
       $scope.products.push(saved);
       self.clear();

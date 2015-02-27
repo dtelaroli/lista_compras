@@ -28,7 +28,7 @@ angular.module('persistence', [])
           var all = [];
           angular.forEach(list, function(item) {
             this.push(new Model(item));
-          }, all)
+          }, all);
           deferred.resolve(all);
         });
         return deferred.promise;

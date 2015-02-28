@@ -24,6 +24,13 @@ angular.module('starter.directives', [])
 				}
 			});
 
+			elm.on('focus', function() {
+				scope.show = false;
+			});
+			elm.on('blur', function() {
+				scope.show = false;
+			});
+
 			scope.selectItem = function (item) {
 				elm.val(item.name);
 				scope.show = false;

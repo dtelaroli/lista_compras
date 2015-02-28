@@ -65,7 +65,7 @@ angular.module('starter.controllers', [])
       lproducts.forEach(function(lp) {
         ids.push(lp.product.id);
       });
-      Product.filter('id', 'not in', ids, 'name').then(function(products) {
+      Product.filter('id', 'not in', ids, 'name').then(function(products) {        
         products.forEach(function(product) {
           $scope.products.push({id: product.id, name: product.name});
         })
@@ -79,7 +79,7 @@ angular.module('starter.controllers', [])
   self.init();
 
   $scope.select = function(item) {
-    $scope.product = item;
+    $scope.product = new Product(item);
   }
 
   $scope.add = function() {
@@ -116,12 +116,11 @@ angular.module('starter.controllers', [])
   };
 
   $scope.reset = function() {
-    var confirmPopup = $ionicPopup.confirm({
+    $ionicPopup.confirm({
       title: 'Limpar dados',
       template: 'Tem certeza?'
-    });
-    
-    confirmPopup.then(function(res) {
+    })
+    .then(function(res) {
       if(res) {
         $db.reset();
       }

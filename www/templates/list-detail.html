@@ -9,8 +9,8 @@
     <h3>Lista de compras {{list.name}}</h3>
 
     <form name="form" ng-submit="add()">
-      <div class="list">
-        <div class="item item-input-inset">
+      <ion-list>
+        <ion-item class="item-input-inset">
           <label class="item-input-wrapper">
             <input type="text" placeholder="Nome do produto" ng-model="product.name" 
               autocomplete="{items: products, onSelect: select}" required>
@@ -18,14 +18,25 @@
           <button class="button button-small" ng-disabled="product.name == null">
             Adicionar Produto
           </button>
-        </div>
-      </div>
+        </ion-item>
+      </ion-list>
     </form>
     <br />
-    <ion-checkbox ng-repeat="l in lproducts" ng-model="l.ok" ng-change="update()"
-      class="item-checkbox-right">
-      {{l.product.name}}
-    </ion-checkbox>
+
+    <ion-list>
+      <ion-item ng-repeat="lp in lproducts" class="item-toggle-option item-remove-animate">
+        {{lp.product.name}}
+        <label class="toggle toggle-balanced">
+          <input type="checkbox" ng-model="lp.ok" ng-change="update()">
+         <div class="track">
+           <div class="handle"></div>
+         </div>
+        </label>
+        <ion-option-button class="button-assertive" ng-click="remove(lp)">
+          Remover da Lista
+        </ion-option-button>
+      </ion-item>
+    </ion-list>
 
   </ion-content>
 </ion-view>

@@ -1,16 +1,16 @@
 <ion-view view-title="Listas de Compras">
   <ion-content>
     <form name="form" ng-submit="add()">
-      <div class="list">
-        <div class="item item-input-inset">
+      <ion-list>
+        <ion-item class="item-input-inset">
           <label class="item-input-wrapper">
             <input type="text" placeholder="Nome da Lista" ng-model="list.name" required>
           </label>
           <button class="button button-small" ng-disabled="list.name == null">
             Criar Lista
           </button>      
-        </div>
-      </div>
+        </ion-item>
+      </ion-list>
     </form>
     <br />
 

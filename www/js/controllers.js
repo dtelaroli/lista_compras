@@ -41,7 +41,8 @@ angular.module('starter.controllers', [])
   };
 }])
 
-.controller('ListDetailCtrl', ['$scope', '$stateParams', 'List', 'Product', function($scope, $stateParams, List, Product) {
+.controller('ListDetailCtrl', ['$scope', '$stateParams', 'List', 'Product', 'ListProduct',
+    function($scope, $stateParams, List, Product, ListProduct) {
   $scope.list;
   $scope.product;
   $scope.lproducts;
@@ -95,8 +96,8 @@ angular.module('starter.controllers', [])
     $scope.list.$flush();
   };
 
-  $scope.remove = function(product) {
-    Product.remove(product).then(function() {
+  $scope.remove = function(lp) {
+    ListProduct.remove(lp).then(function() {
       self.init();
     });
   };
@@ -110,9 +111,50 @@ angular.module('starter.controllers', [])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', function($scope, $db, $ionicPopup) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 
+    function($scope, $db, $ionicPopup, Account) {
   $scope.settings = {
     enableFriends: true
+  };
+
+  $scope.account = {};
+  
+  var self = {
+    init: function() {
+      Account.first().then(function(account) {
+        if(account === undefined) {
+          $scope.account = new Account();
+          $scope.registered = false;
+        }
+        else {
+          $scope.account = new Account(account);
+          $scope.registered = true;
+          $scope.signed = account.key !== '';
+        }
+      });
+    }
+  };
+
+  self.init();
+
+  $scope.create = function() {
+    $scope.account.$save(function() {
+      self.init();
+      $ionicPopup.alert({
+        title: 'Criação de conta',
+        template: 'Solicitação executada<br />verifique seu email'
+      });
+    });
+  };
+
+  $scope.auth = function() {
+    $scope.account.$save(function() {
+      self.init();
+      $ionicPopup.alert({
+        title: 'Ativação de conta',
+        template: 'Sua conta foi ativada<br />Aproveite o App!'
+      });
+    });
   };
 
   $scope.reset = function() {
@@ -122,7 +164,9 @@ angular.module('starter.controllers', [])
     })
     .then(function(res) {
       if(res) {
-        $db.reset();
+        $db.reset().then(function() {
+          self.init();
+        });        
       }
     });
   };

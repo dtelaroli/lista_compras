@@ -1,6 +1,6 @@
 angular.module('persistence', [])
 
-.factory('$db', [function() {
+.factory('$db', ['$q', function($q) {
   var self = {
     init: function(config) {
       persistence.store.websql.config(persistence, config.name, config.description, config.size);
@@ -17,10 +17,15 @@ angular.module('persistence', [])
     },
 
     reset: function() {
+      deferred = $q.defer();
       persistence.transaction(function(tx) {
         persistence.reset(tx);
-        persistence.schemaSync();      
+        persistence.schemaSync(function() {
+          deferred.resolve(true);
+        });
+
       });
+      return deferred.promise;
     },
 
     model: function(name) {
@@ -42,6 +47,14 @@ angular.module('persistence', [])
             all.push(new Model(item));
           });
           deferred.resolve(all);
+        });
+        return deferred.promise;
+      },
+
+      first: function() {
+        var deferred = $q.defer();
+        Entity.all().limit(1).list(function(list) {
+          deferred.resolve(list[0]);
         });
         return deferred.promise;
       },
@@ -178,10 +191,18 @@ angular.module('starter.services', ['persistence'])
   ListProduct.hasOne('list', List);
   ListProduct.hasOne('product', Product);
 
+  var Account = persistence.define('Account', {
+    name: 'TEXT',
+    email: 'TEXT',
+    zipcode: 'TEXT',
+    key: 'TEXT'
+  });
+
   var self = {
     List: List,
     ListProduct: ListProduct,
-    Product: Product
+    Product: Product,
+    Account: Account
   };
 
   return self;
@@ -223,6 +244,10 @@ angular.module('starter.services', ['persistence'])
 
 .factory('ListProduct', ['$entity', function($entity) {
   return $entity('ListProduct');
+}])
+
+.factory('Account', ['$entity', function($entity) {
+  return $entity('Account');
 }])
 
 /**

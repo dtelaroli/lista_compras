@@ -8,7 +8,16 @@ angular.module('persistence', [])
       if(config.models.init !== undefined) {
         config.models.init();
       }
+      if(config.reset) {
+        self.reset();
+      }
       persistence.schemaSync();
+    },
+
+    reset: function() {
+      persistence.transaction(function(tx) {
+        persistence.reset(tx);        
+      });
     },
 
     model: function(name) {
@@ -112,43 +121,67 @@ angular.module('starter.services', ['persistence'])
 
 .run(['$db', '$model', '$ionicPlatform', function($db, $model, $ionicPlatform) {
   $db.init({
-    name: 'ListaCompras', 
+    name: 'ListaCompras2', 
     description: 'Lista de Compra', 
     size: 5 * 1024 * 1024, 
-    models: $model
+    models: $model,
+    reset: false
   });
 
   ionic.Platform.isFullScreen = true;
 }])
 
 .factory('$model', [function() {
+  var List = persistence.define('List', {
+    name: 'TEXT',
+    archived: 'BOOL',
+    created_at: 'DATE'
+  });
+
+  var Product = persistence.define('Product', {
+    name: 'TEXT'
+  });
+
+  var ListProduct = persistence.define('ListProduct', {
+    ok: 'BOOL'
+  });
+
+  List.hasMany('list_products', ListProduct, 'list');
+  ListProduct.hasOne('list', List);
+  ListProduct.hasOne('product', Product);
+
   var self = {
-    init: function() { 
-      self.List.hasMany('products', self.Product, 'lists');
-      self.Product.hasMany('lists', self.List, 'products');
-    },
-
-    List: persistence.define('List', {
-      name: 'TEXT',
-      archived: 'BOOL'
-    }),
-
-    Product: persistence.define('Product', {
-      name: 'TEXT',
-      ok: 'BOOL'
-    })
+    List: List,
+    ListProduct: ListProduct,
+    Product: Product
   };
 
   return self;
 }])
 
-.factory('List', ['$q', '$entity', function($q, $entity) {
+.factory('List', ['$q', '$entity', 'ListProduct', function($q, $entity, ListProduct) {
   var list = $entity('List', {
+    lproducts: function() {
+      var deferred = $q.defer();
+
+      this.list_products.prefetch('product').list(function(lproducts) {
+        deferred.resolve(lproducts);
+      });
+
+      return deferred.promise;
+    },
+
     add_product: function(product) {
       var deferred = $q.defer();
-      this.products.add(product);
-      this.$flush(function() {
-        deferred.resolve(true);
+
+      var self = this;
+      new ListProduct({
+        list: self,
+        product: product
+      }).$save(function(lp) {
+        self.$flush(function() {
+          deferred.resolve(lp);
+        });
       });
       return deferred.promise;
     }
@@ -158,6 +191,10 @@ angular.module('starter.services', ['persistence'])
 
 .factory('Product', ['$entity', function($entity) {
   return $entity('Product');
+}])
+
+.factory('ListProduct', ['$entity', function($entity) {
+  return $entity('ListProduct');
 }])
 
 /**

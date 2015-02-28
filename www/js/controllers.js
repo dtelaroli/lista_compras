@@ -21,6 +21,7 @@ angular.module('starter.controllers', [])
   self.init();
 
   $scope.add = function() { 
+    $scope.list.created_at = new Date();
     new List($scope.list).$save(function(list) {
       $scope.lists.push(list);
       self.clear();
@@ -43,14 +44,15 @@ angular.module('starter.controllers', [])
 .controller('ListDetailCtrl', ['$scope', '$stateParams', 'List', 'Product', function($scope, $stateParams, List, Product) {
   $scope.list;
   $scope.product;
+  $scope.lproducts;
 
   var self = {
     init: function() {
       List.get($stateParams.listId).then(function(list) {
-        $scope.list = list;
-        list.products.list(function(products) {
-          $scope.products = products;
+        list.$lproducts(function(lproducts) {
+          $scope.lproducts = lproducts;
         });
+        $scope.list = list;
         self.clear();
       });
     },
@@ -67,8 +69,9 @@ angular.module('starter.controllers', [])
 
   $scope.add = function() {
     new Product($scope.product).$save(function(saved) {
-      $scope.list.$add_product(saved);      
-      $scope.products.push(saved);
+      $scope.list.$add_product(saved, function(lp) {
+        $scope.lproducts.push(lp);        
+      });
       self.clear();
     });
   };

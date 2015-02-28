@@ -11,12 +11,15 @@ angular.module('persistence', [])
       if(config.reset) {
         self.reset();
       }
-      persistence.schemaSync();
+      else {
+        persistence.schemaSync();
+      }
     },
 
     reset: function() {
       persistence.transaction(function(tx) {
-        persistence.reset(tx);        
+        persistence.reset(tx);
+        persistence.schemaSync();      
       });
     },
 
@@ -146,7 +149,7 @@ angular.module('starter.services', ['persistence'])
 
 .run(['$db', '$model', '$ionicPlatform', function($db, $model, $ionicPlatform) {
   $db.init({
-    name: 'ListaCompras2', 
+    name: 'ListaCompras', 
     description: 'Lista de Compra', 
     size: 5 * 1024 * 1024, 
     models: $model,

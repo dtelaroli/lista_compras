@@ -110,8 +110,21 @@ angular.module('starter.controllers', [])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', function($scope) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', function($scope, $db, $ionicPopup) {
   $scope.settings = {
     enableFriends: true
   };
-});
+
+  $scope.reset = function() {
+    var confirmPopup = $ionicPopup.confirm({
+      title: 'Limpar dados',
+      template: 'Tem certeza?'
+    });
+    
+    confirmPopup.then(function(res) {
+      if(res) {
+        $db.reset();
+      }
+    });
+  };
+}]);

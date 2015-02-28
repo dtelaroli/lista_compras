@@ -45,15 +45,30 @@ angular.module('starter.controllers', [])
   $scope.list;
   $scope.product;
   $scope.lproducts;
+  $scope.products = [];
 
   var self = {
     init: function() {
       List.get($stateParams.listId).then(function(list) {
         list.$lproducts(function(lproducts) {
-          $scope.lproducts = lproducts;
+          $scope.lproducts = lproducts;        
+          self.products(lproducts);
         });
         $scope.list = list;
         self.clear();
+      });
+
+    },
+
+    products: function(lproducts) {
+      var ids = [];
+      lproducts.forEach(function(lp) {
+        ids.push(lp.product.id);
+      });
+      Product.filter('id', 'not in', ids, 'name').then(function(products) {
+        products.forEach(function(product) {
+          $scope.products.push({id: product.id, name: product.name});
+        })
       });
     },
 
@@ -63,9 +78,9 @@ angular.module('starter.controllers', [])
   };
   self.init();
 
-  $scope.update = function() {
-    $scope.list.$flush();
-  };
+  $scope.select = function(item) {
+    $scope.product = item;
+  }
 
   $scope.add = function() {
     new Product($scope.product).$save(function(saved) {
@@ -74,6 +89,10 @@ angular.module('starter.controllers', [])
       });
       self.clear();
     });
+  };
+
+  $scope.update = function() {
+    $scope.list.$flush();
   };
 
   $scope.remove = function(product) {

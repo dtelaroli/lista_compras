@@ -33,19 +33,34 @@ angular.module('persistence', [])
     var defaults = {
       all: function() {
         var deferred = $q.defer();
-        Entity.all().list(function (list) {
+        Entity.all().list(function(list) {
           var all = [];
-          angular.forEach(list, function(item) {
-            this.push(new Model(item));
-          }, all);
+          list.forEach(function(item) {
+            all.push(new Model(item));
+          });
           deferred.resolve(all);
         });
         return deferred.promise;
       },
 
+      filter: function(params) {
+        var deferred = $q.defer();
+        var all = Entity.all().filter(params[0], params[1], params[2]);
+
+        if(params[3] !== undefined) {
+          all = all.order(params[3]);
+        }
+
+        all.list(function(list) {
+          deferred.resolve(list);
+        });
+
+        return deferred.promise;
+      },
+
       get: function(id) {
         var deferred = $q.defer();
-        Entity.load(id, function (instance) {
+        Entity.load(id, function(instance) {
           deferred.resolve(new Model(instance));
         });
         return deferred.promise;
@@ -88,16 +103,19 @@ angular.module('persistence', [])
 
     angular.forEach(actions, function(action, name) {
       Model[name] = function(params, callback) {
+        if(arguments.length > 2) {
+          params = [arguments[0], arguments[1], arguments[2], arguments[3]];
+        }
         var result = action.call(this, params);
         if(result !== undefined) {
           result.then(function(value) {
-            if(callback !== undefined) {
+            if(typeof callback === 'function') {
               callback.call(this, value);
             }
           });
           return result.$promise || result;
         }
-        else if(callback !== undefined) {
+        else if(typeof callback === 'function') {
           return callback.call(this);
         }
       };
@@ -106,6 +124,13 @@ angular.module('persistence', [])
         if(typeof params === 'function') {
           callback = params;
           params = this;
+        }
+        if(arguments.lenth > 2) {
+          params = arguments;
+          var last = arguments[arguments.lenth - 1];
+          if(typeof last === 'function') {
+            callback = last;
+          }
         }
         return Model[name].call(this, params, callback);
       };

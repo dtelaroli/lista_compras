@@ -9,3 +9,10 @@
   /*the default item padding*/
   padding: 15px;
 }
+
+.autocomplete {
+	background-color: #efefef; 
+	padding: 5px; 
+	text-align: center;
+	color: #666;
+}

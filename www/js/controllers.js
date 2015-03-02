@@ -1,4 +1,10 @@
-angular.module('starter.controllers', [])
+angular.module('starter.controllers', ['ng-token-auth'])
+
+.config(function($authProvider) {
+    $authProvider.configure({
+        apiUrl: 'http://localhost:3000'
+    });
+})
 
 .controller('DashCtrl', function($scope) {})
 
@@ -111,8 +117,8 @@ angular.module('starter.controllers', [])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 
-    function($scope, $db, $ionicPopup, Account) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', '$auth', 
+    function($scope, $db, $ionicPopup, Account, $auth) {
   $scope.settings = {
     enableFriends: true
   };
@@ -148,6 +154,15 @@ angular.module('starter.controllers', [])
   };
 
   $scope.auth = function() {
+    $auth.authenticate('facebook')
+    .then(function(resp) { 
+      console.log(resp);
+    })
+    .catch(function(resp) { 
+      console.error(resp);
+    });
+
+    return;
     $scope.account.$save(function() {
       self.init();
       $ionicPopup.alert({

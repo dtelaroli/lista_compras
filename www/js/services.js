@@ -194,8 +194,8 @@ angular.module('starter.services', ['persistence'])
   var Account = persistence.define('Account', {
     name: 'TEXT',
     email: 'TEXT',
-    zipcode: 'TEXT',
-    key: 'TEXT'
+    user_id: 'INT',
+    provider: 'TEXT'
   });
 
   var self = {

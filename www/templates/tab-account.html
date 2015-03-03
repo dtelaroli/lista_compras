@@ -12,49 +12,21 @@
       </ion-item> -->
     </ion-list>
     <div class="padding">
-      <p ng-if="!registered && !signed">
-        Crie uma conta para você poder compartilhar suas listas e salvar na núvem. 
-      </p>
-      <p ng-if="!signed">
-        Você receberá por email uma chave para poder utilizar sua conta.
+      <p ng-if="state === 'Unsigned'">
+        Faça login para você poder compartilhar suas listas e salvar na núvem.
       </p>
 
-      <form name="form" ng-submit="create()" ng-if="!registered">
-        <div class="list list-inset">
-          <label class="item item-input">
-            <input type="text" ng-model="account.name" placeholder="Nome" required>
-          </label>
-          <label class="item item-input">
-            <input type="email" ng-model="account.email" placeholder="Email" required>
-          </label>
-          <label class="item item-input">
-            <input type="text" ng-model="account.zipcode" placeholder="CEP" maxlength="8" minlength="8" pattern="\d{8}" required>
-          </label>
-          <button ng-disabled="form.$invalid" class="button button-block button-positive">
-            Solicitar chave
-          </button>
-        </div>
-      </form>
-
-      <form name="form" ng-submit="auth()" ng-if="registered && !signed">
-        <div class="list list-inset">
-          <label class="item item-input">
-            <input type="text" ng-model="account.key" placeholder="Chave de autenticação" required>
-          </label>
-          <button ng-disabled="form.$invalid" class="button button-block button-positive">
-            Autenticar
-          </button>
-        </div>
-      </form>
-
-      <div ng-if="registered && signed">
+      <div ng-if="state === 'Signed'">
         <p>Ola {{account.name}}!</p>
         <p>Sua conta está ativa.</p>
       </div>
     </div>
 
-    <button ng-click="auth()" class="button button-full">
-      Login
+    <button ng-click="facebook()" ng-if="state === 'Unsigned'" class="button button-full">
+      Login com Facebook
+    </button>
+    <button ng-click="google()" ng-if="state === 'Unsigned'" class="button button-full">
+      Login com Google
     </button>
 
     <button ng-click="reset()" class="button button-full button-assertive">

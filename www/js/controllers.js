@@ -2,7 +2,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
 
 .config(function($authProvider) {
     $authProvider.configure({
-        apiUrl: 'http://localhost:3000'
+        apiUrl: 'http://dtelaroli.org:3000'
     });
 })
 
@@ -127,48 +127,66 @@ angular.module('starter.controllers', ['ng-token-auth'])
   
   var self = {
     init: function() {
+      // $auth.validateUser().then(function(response) {
+      //   console.log(response)
+      // })
+      // .catch(function(response) {
+      // });
       Account.first().then(function(account) {
         if(account === undefined) {
-          $scope.account = new Account();
-          $scope.registered = false;
+          $scope.state = 'Unsigned';
         }
         else {
-          $scope.account = new Account(account);
-          $scope.registered = true;
-          $scope.signed = account.key !== '';
+          $scope.account = account;
+          $scope.state = 'Signed';
         }
+      });
+    },
+
+    confirm: function() {
+      self.init();
+      $ionicPopup.alert({
+        title: 'Sucesso',
+        template: 'Login efetuado com sucesso.<br />Aproveite o App!'
+      });
+    },
+
+    error: function(errors) {      
+      $ionicPopup.alert({
+        title: 'Erro',
+        template: 'Ocorreu um problema ao logar!<br />' + errors.join('<br />')
+      });
+    },
+
+    create: function(response) {
+      new Account({
+        name: response.name, 
+        email: response.email, 
+        user_id: response.id,
+        provider: response.provider
+      }).$save(function() {
+        self.confirm();
       });
     }
   };
 
   self.init();
 
-  $scope.create = function() {
-    $scope.account.$save(function() {
-      self.init();
-      $ionicPopup.alert({
-        title: 'Criação de conta',
-        template: 'Solicitação executada<br />verifique seu email'
-      });
+  $scope.google = function() {
+    $auth.authenticate('google').then(function(response) { 
+      self.create(response);
+    })
+    .catch(function(response) { 
+      self.error(response.errors)
     });
   };
 
-  $scope.auth = function() {
-    $auth.authenticate('facebook')
-    .then(function(resp) { 
-      console.log(resp);
+   $scope.facebook = function() {
+    $auth.authenticate('facebook').then(function(response) { 
+      self.create(response);
     })
     .catch(function(resp) { 
-      console.error(resp);
-    });
-
-    return;
-    $scope.account.$save(function() {
-      self.init();
-      $ionicPopup.alert({
-        title: 'Ativação de conta',
-        template: 'Sua conta foi ativada<br />Aproveite o App!'
-      });
+      console.error('error', resp);
     });
   };
 
@@ -180,6 +198,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
     .then(function(res) {
       if(res) {
         $db.reset().then(function() {
+          $auth.signOut();
           self.init();
         });        
       }

@@ -23,3 +23,7 @@
 	right: 16px;
 	z-index: 3;
 }
+
+.capitalize {
+  text-transform: capitalize;
+}

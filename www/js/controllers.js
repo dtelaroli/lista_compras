@@ -9,9 +9,6 @@ angular.module('starter.controllers', ['ng-token-auth'])
 .controller('DashCtrl', function($scope) {})
 
 .controller('ListsCtrl', ['$scope', 'List', function($scope, List) {
-  $scope.lists;
-  $scope.list;
-
   var self = {
     init: function() {
       List.all().then(function(lists) {
@@ -28,7 +25,8 @@ angular.module('starter.controllers', ['ng-token-auth'])
 
   $scope.add = function() { 
     $scope.list.created_at = new Date();
-    new List($scope.list).$save(function(list) {
+    List.save($scope.list, function(list) {
+      console.log($scope.lists)
       $scope.lists.push(list);
       self.clear();
     });
@@ -73,7 +71,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
         ids.push(lp.product.id);
       });
       Product.filter('id', 'not in', ids, 'name').then(function(products) {        
-        products.forEach(function(product) {
+        angular.forEach(products, function(product) {
           $scope.products.push({id: product.id, name: product.name});
         })
       });
@@ -90,7 +88,8 @@ angular.module('starter.controllers', ['ng-token-auth'])
   }
 
   $scope.add = function() {
-    new Product($scope.product).$save(function(saved) {
+    $scope.product.name = $scope.product.name.toLowerCase();
+    Product.save($scope.product, function(saved) {
       $scope.list.$add_product(saved, function(lp) {
         $scope.lproducts.push(lp);        
       });
@@ -117,8 +116,8 @@ angular.module('starter.controllers', ['ng-token-auth'])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', '$auth', 
-    function($scope, $db, $ionicPopup, Account, $auth) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 'Product', 'ProductSync', '$auth', 
+    function($scope, $db, $ionicPopup, Account, Product, ProductSync, $auth) {
   $scope.settings = {
     enableFriends: true
   };
@@ -127,19 +126,22 @@ angular.module('starter.controllers', ['ng-token-auth'])
   
   var self = {
     init: function() {
-      // $auth.validateUser().then(function(response) {
-      //   console.log(response)
-      // })
-      // .catch(function(response) {
-      // });
-      Account.first().then(function(account) {
-        if(account === undefined) {
-          $scope.state = 'Unsigned';
-        }
-        else {
-          $scope.account = account;
-          $scope.state = 'Signed';
-        }
+      $auth.validateUser().then(function(user) {
+        $scope.offline = false;
+        console.log(user)
+        Account.first().then(function(account) {
+          if(account === undefined) {
+            $scope.state = 'Unsigned';
+          }
+          else {
+            $scope.account = account;
+            $scope.state = 'Signed';
+          }
+        });
+      }).catch(function(error) {
+        console.log(error);
+        $scope.offline = true;
+        $scope.state = 'Unsigned';
       });
     },
 
@@ -159,18 +161,18 @@ angular.module('starter.controllers', ['ng-token-auth'])
     },
 
     create: function(response) {
-      new Account({
+      Account.save({
         name: response.name, 
         email: response.email, 
         user_id: response.id,
         provider: response.provider
-      }).$save(function() {
+      }, function() {
         self.confirm();
       });
     }
   };
 
-  self.init();
+  self.init();  
 
   $scope.google = function() {
     $auth.authenticate('google').then(function(response) { 
@@ -188,6 +190,20 @@ angular.module('starter.controllers', ['ng-token-auth'])
     .catch(function(resp) { 
       console.error('error', resp);
     });
+  };
+
+  $scope.sync = function() {
+    ProductSync.exec(function(p) {
+      console.log(p)
+    });
+    // Product.all().then(function(products) {
+    //   products.forEach(function(product) {
+    //     var sync = new ProductSync({sqlite_id: product.id, name: product.name});
+    //     // sync.$save(function(obj) {
+    //     //   console.log(obj)
+    //     // });
+    //   });
+    // });
   };
 
   $scope.reset = function() {

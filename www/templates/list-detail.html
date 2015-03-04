@@ -24,7 +24,7 @@
     <br />
 
     <ion-list>
-      <ion-item ng-repeat="lp in lproducts" class="item-toggle-option item-remove-animate">
+      <ion-item ng-repeat="lp in lproducts" class="item-toggle-option item-remove-animate capitalize">
         {{lp.product.name}}
         <label class="toggle toggle-balanced">
           <input type="checkbox" ng-model="lp.ok" ng-change="update()">

@@ -2,7 +2,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
 
 .config(function($authProvider) {
     $authProvider.configure({
-        apiUrl: 'http://dtelaroli.org:3000'
+        apiUrl: 'http://dtelaroli.org'
     });
 })
 
@@ -116,8 +116,8 @@ angular.module('starter.controllers', ['ng-token-auth'])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 'Product', 'ProductSync', '$auth', 
-    function($scope, $db, $ionicPopup, Account, Product, ProductSync, $auth) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 'Product', 'ProductSync', '$auth', 'authService',
+    function($scope, $db, $ionicPopup, Account, Product, ProductSync, $auth, authService) {
   $scope.settings = {
     enableFriends: true
   };
@@ -126,22 +126,14 @@ angular.module('starter.controllers', ['ng-token-auth'])
   
   var self = {
     init: function() {
-      $auth.validateUser().then(function(user) {
-        $scope.offline = false;
-        console.log(user)
-        Account.first().then(function(account) {
-          if(account === undefined) {
-            $scope.state = 'Unsigned';
-          }
-          else {
-            $scope.account = account;
-            $scope.state = 'Signed';
-          }
-        });
-      }).catch(function(error) {
-        console.log(error);
-        $scope.offline = true;
-        $scope.state = 'Unsigned';
+      Account.first().then(function(account) {
+        if(account === undefined) {
+          $scope.state = 'Unsigned';
+        }
+        else {
+          $scope.account = account;
+          $scope.state = 'Signed';
+        }
       });
     },
 
@@ -175,7 +167,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
   self.init();  
 
   $scope.google = function() {
-    $auth.authenticate('google').then(function(response) { 
+    authService.login().then(function(response) { 
       self.create(response);
     })
     .catch(function(response) { 

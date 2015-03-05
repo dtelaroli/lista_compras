@@ -2,7 +2,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
 
 .config(function($authProvider) {
     $authProvider.configure({
-        apiUrl: 'http://dtelaroli.org'
+        apiUrl: 'http://localhost:3000'
     });
 })
 
@@ -47,11 +47,6 @@ angular.module('starter.controllers', ['ng-token-auth'])
 
 .controller('ListDetailCtrl', ['$scope', '$stateParams', 'List', 'Product', 'ListProduct',
     function($scope, $stateParams, List, Product, ListProduct) {
-  $scope.list;
-  $scope.product;
-  $scope.lproducts;
-  $scope.products = [];
-
   var self = {
     init: function() {
       List.get($stateParams.listId).then(function(list) {
@@ -70,7 +65,8 @@ angular.module('starter.controllers', ['ng-token-auth'])
       lproducts.forEach(function(lp) {
         ids.push(lp.product.id);
       });
-      Product.filter('id', 'not in', ids, 'name').then(function(products) {        
+      Product.filter('id', 'not in', ids, 'name').then(function(products) {    
+        $scope.products = [];
         angular.forEach(products, function(product) {
           $scope.products.push({id: product.id, name: product.name});
         })
@@ -116,16 +112,15 @@ angular.module('starter.controllers', ['ng-token-auth'])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 'Product', 'ProductSync', '$auth', 'authService',
-    function($scope, $db, $ionicPopup, Account, Product, ProductSync, $auth, authService) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 'Product', 'ProductSync', 'ListSync', '$auth',
+    function($scope, $db, $ionicPopup, Account, Product, ProductSync, ListSync, $auth) {
   $scope.settings = {
     enableFriends: true
   };
 
-  $scope.account = {};
-  
   var self = {
     init: function() {
+      $scope.account = {};
       Account.first().then(function(account) {
         if(account === undefined) {
           $scope.state = 'Unsigned';
@@ -167,11 +162,12 @@ angular.module('starter.controllers', ['ng-token-auth'])
   self.init();  
 
   $scope.google = function() {
-    authService.login().then(function(response) { 
+    // authService.login().then(function(response) {
+    $auth.authenticate('google').then(function(response) {
       self.create(response);
     })
     .catch(function(response) { 
-      self.error(response.errors)
+      
     });
   };
 
@@ -185,17 +181,12 @@ angular.module('starter.controllers', ['ng-token-auth'])
   };
 
   $scope.sync = function() {
+    ListSync.exec(function(p) {
+      console.log(p)
+    });
     ProductSync.exec(function(p) {
       console.log(p)
     });
-    // Product.all().then(function(products) {
-    //   products.forEach(function(product) {
-    //     var sync = new ProductSync({sqlite_id: product.id, name: product.name});
-    //     // sync.$save(function(obj) {
-    //     //   console.log(obj)
-    //     // });
-    //   });
-    // });
   };
 
   $scope.reset = function() {

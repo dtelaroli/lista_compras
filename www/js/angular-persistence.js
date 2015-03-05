@@ -45,7 +45,7 @@ angular.module('ngPersistence', [])
           var all = [];
           angular.forEach(list, function(item) {
             all.push(new Model(item));
-          }, all);      
+          }, all);
           deferred.resolve(all);
         });
         return deferred.promise;
@@ -61,14 +61,19 @@ angular.module('ngPersistence', [])
 
       filter: function(params) {
         var deferred = $q.defer();
-        var all = Entity.all().filter(params[0], params[1], params[2]);
+        var filter = Entity.all().filter(params[0], params[1], params[2]);
 
         if(params[3] !== undefined) {
-          all = all.order(params[3]);
+          filter = filter.order(params[3]);
         }
 
-        all.list(function(list) {
-          deferred.resolve(new Model(list));
+        filter.list(function(list) {
+          console.log(list)
+          var all = [];
+          angular.forEach(list, function(item) {
+            all.push(new Model(item));
+          }, all);      
+          deferred.resolve(all);
         });
 
         return deferred.promise;
@@ -87,7 +92,7 @@ angular.module('ngPersistence', [])
         var instance = new Entity(params);
         persistence.add(instance);
         persistence.flush();
-        deferred.resolve(instance);
+        deferred.resolve(new Model(instance));
         return deferred.promise;
       },
       

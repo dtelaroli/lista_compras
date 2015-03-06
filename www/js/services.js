@@ -84,7 +84,7 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
   function sync(name, resource, parse_in, out) {
     var Model = $entity(name);
     var Service = $resource('http://:end_point/:resource/:id.:format', {
-      end_point: 'localhost:3000', 
+      end_point: 'dtelaroli.org', 
       resource: resource,
       format: 'json'
     }, {

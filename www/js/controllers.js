@@ -2,7 +2,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
 
 .config(function($authProvider) {
     $authProvider.configure({
-        apiUrl: 'http://localhost:3000'
+        apiUrl: 'http://dtelaroli.org'
     });
 })
 

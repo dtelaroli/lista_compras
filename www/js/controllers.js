@@ -165,7 +165,6 @@ angular.module('starter.controllers', ['ng-token-auth'])
   self.init();  
 
   $scope.google = function() {
-    // authService.login().then(function(response) {
     $auth.authenticate('google').then(function(response) {
       self.create(response);
     }, function(response) { 

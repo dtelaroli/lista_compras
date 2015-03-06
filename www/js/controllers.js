@@ -26,7 +26,6 @@ angular.module('starter.controllers', ['ng-token-auth'])
   $scope.add = function() { 
     $scope.list.created_at = new Date();
     List.save($scope.list, function(list) {
-      console.log($scope.lists)
       $scope.lists.push(list);
       self.clear();
     });
@@ -112,8 +111,8 @@ angular.module('starter.controllers', ['ng-token-auth'])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 'Product', 'ProductSync', 'ListSync', '$auth',
-    function($scope, $db, $ionicPopup, Account, Product, ProductSync, ListSync, $auth) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 'Product', 'SyncService', '$auth',
+    function($scope, $db, $ionicPopup, Account, Product, SyncService, $auth) {
   $scope.settings = {
     enableFriends: true
   };
@@ -135,25 +134,29 @@ angular.module('starter.controllers', ['ng-token-auth'])
     confirm: function() {
       self.init();
       $ionicPopup.alert({
-        title: 'Sucesso',
-        template: 'Login efetuado com sucesso.<br />Aproveite o App!'
+        title: 'Confirmação',
+        template: 'Operação efetuada com sucesso!'
       });
     },
 
-    error: function(errors) {      
+    error: function(errors) {  
+      switch(typeof errors) {
+        case 'object':
+          errors = errors.errors;
+          break;
+          
+        case 'string':
+          errors = [errors];
+          break;
+      }
       $ionicPopup.alert({
         title: 'Erro',
-        template: 'Ocorreu um problema ao logar!<br />' + errors.join('<br />')
+        template: errors.join('<br />')
       });
     },
 
     create: function(response) {
-      Account.save({
-        name: response.name, 
-        email: response.email, 
-        user_id: response.id,
-        provider: response.provider
-      }, function() {
+      Account.save(response, function() {
         self.confirm();
       });
     }
@@ -165,27 +168,24 @@ angular.module('starter.controllers', ['ng-token-auth'])
     // authService.login().then(function(response) {
     $auth.authenticate('google').then(function(response) {
       self.create(response);
-    })
-    .catch(function(response) { 
-      
+    }, function(response) { 
+      self.error(response);
     });
   };
 
    $scope.facebook = function() {
     $auth.authenticate('facebook').then(function(response) { 
       self.create(response);
-    })
-    .catch(function(resp) { 
-      console.error('error', resp);
+    }, function(response) { 
+      self.error(response);
     });
   };
 
   $scope.sync = function() {
-    ListSync.exec(function(p) {
-      console.log(p)
-    });
-    ProductSync.exec(function(p) {
-      console.log(p)
+    SyncService.exec().then(function(result) {
+      self.confirm();
+    }, function(result) {
+      self.error(response);
     });
   };
 

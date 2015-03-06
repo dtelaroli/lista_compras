@@ -68,7 +68,6 @@ angular.module('ngPersistence', [])
         }
 
         filter.list(function(list) {
-          console.log(list)
           var all = [];
           angular.forEach(list, function(item) {
             all.push(new Model(item));
@@ -109,6 +108,20 @@ angular.module('ngPersistence', [])
         var deferred = $q.defer();
         persistence.flush(function(flushed) {
           deferred.resolve(flushed);
+        });
+        return deferred.promise;
+      },
+      sync: function(params) {
+        var deferred = $q.defer();
+        Entity.syncAll(function(result) {
+          params[0].call(this, result);
+          deferred.resolve(result);
+        }, function(result) {
+          params[1].call(this, result);
+          deferred.resolve(result);
+        }, function(result) {
+          params[2].call(this, result);
+          deferred.resolve(result);
         });
         return deferred.promise;
       }

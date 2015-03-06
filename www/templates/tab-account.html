@@ -29,7 +29,7 @@
       Login com Google
     </button>
 
-    <button ng-click="sync()" class="button button-full">
+    <button ng-click="sync()" ng-if="state === 'Signed'" class="button button-full">
       Sync
     </button>
 

@@ -35,11 +35,9 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
   var Account = persistence.define('Account', {
     name: 'TEXT',
     email: 'TEXT',
-    user_id: 'INT',
     provider: 'TEXT',
-    auth_token: 'TEXT',
-    uid: 'TEXT',
-    nickname: 'TEXT'
+    nickname: 'TEXT',
+    image: 'TEXT'
   });
 
   var self = {
@@ -148,10 +146,10 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
       var deferred = $q.defer();
 
       var self = this;
-      new ListProduct({
+      ListProduct.save({
         list: self,
         product: product
-      }).$save(function(lp) {
+      }, function(lp) {
         self.$flush(function() {
           deferred.resolve(lp);
         });
@@ -162,101 +160,84 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
   return list;
 }])
 
-.factory('ListService', ['$resource', function($resource) {
-  return $resource('http://:end_point/lists/:id.:format', {end_point: 'localhost:3000', format: 'json'});
-}])
+.factory('$sync', ['$q', '$resource', '$entity', function($q, $resource, $entity) {
+  function sync(name, resource, parse_in, out) {
+    var Model = $entity(name);
+    var Service = $resource('http://:end_point/:resource/:id.:format', {
+      end_point: 'localhost:3000', 
+      resource: resource,
+      format: 'json'
+    }, {
+      update: {
+        method: 'PATCH',
+        params: {
+          id: '@id'
+        }
+      }
+    });
 
-.factory('ListSync', ['$q', 'List', 'ListService', function($q, List, ListService) {
-  var self = {
-    saveAll: function() {
-      var deferred = $q.defer();
-      List.filter('sync', '=', false).then(function(lists) {
-        angular.forEach(lists, function(list) {
-          ListService.save(list, function(result) {
-            list.sync = true;
-            console.log(list)
-            list.$flush();
+    var self = {
+      sendAll: function() {
+        var deferred = $q.defer();        
+        Model.filter('sync', '=', false).then(function(lists) {
+          angular.forEach(lists, function(list) {
+            var dec = out === undefined ? JSON.decycle(list) : out.call(this, list);
+            delete dec['_session'];
+            delete dec['_data'];
+            delete dec['_data_obj'];
+            delete dec['subscribers'];
+            delete dec['_new'];
+            delete dec['_dirtyProperties'];
+            delete dec['_type'];
+            var callback = function(result) {
+              list.sync = true;
+              Model.save(list);
+            };
+            if(dec.sync) {
+              Service.update(dec, callback);
+            }
+            else {
+              Service.save(dec, callback);
+            }
           });
-        });
-        deferred.resolve(true);
-      });
-      return deferred.promise;
-    },
-
-    loadAll: function() {
-      var deferred = $q.defer();
-      ListService.query(function(lists) {
-        angular.forEach(lists, function(list) {
-          list.sync = true;
-          List.save(list);
-        });
-        deferred.resolve(true);
-      });
-      return deferred.promise;
-    },
-
-    exec: function() {
-      var deferred = $q.defer();
-      self.loadAll().then(function() {
-        self.saveAll().then(function() {
           deferred.resolve(true);
         });
-      });
-      return deferred.promise;
-    }
+        return deferred.promise;
+      },
+
+      receiveAll: function() {
+        var deferred = $q.defer();
+        Service.query(function(lists) {
+          angular.forEach(lists, function(list) {
+            list.sync = true;
+            Model.save(parse_in === undefined ? list : parse_in.call(this, list));
+          });
+          deferred.resolve(true);
+        }, function(result) {
+          deferred.reject(result);
+        });
+        return deferred.promise;
+      },
+
+      exec: function() {
+        var deferred = $q.defer();
+        self.receiveAll().then(function() {
+          self.sendAll().then(function() {
+            deferred.resolve(true);
+          });
+        });
+        return deferred.promise;
+      }
+    };
+    return self;
   };
 
-  return self;
+  return sync;
 }])
+
 
 .factory('Product', ['$entity', function($entity) {
   return $entity('Product');
-}])
-
-.factory('ProductService', ['$resource', function($resource) {
-  return $resource('http://:end_point/products/:id.:format', {end_point: 'localhost:3000', format: 'json'});
-}])
-
-.factory('ProductSync', ['$q', 'Product', 'ProductService', function($q, Product, ProductService) {
-  var self = {
-    saveAll: function() {
-      var deferred = $q.defer();
-      Product.filter('sync', '=', false).then(function(products) {
-        angular.forEach(products, function(product) {
-          ProductService.save(product, function(result) {
-            product.sync = true;
-            Product.save(product);
-          });
-        });
-        deferred.resolve(true);
-      });
-      return deferred.promise;
-    },
-
-    loadAll: function() {
-      var deferred = $q.defer();
-      ProductService.query(function(products) {
-        angular.forEach(products, function(product) {
-          product.sync = true;
-          Product.save(product);
-        });
-        deferred.resolve(true);
-      });
-      return deferred.promise;
-    },
-
-    exec: function() {
-      var deferred = $q.defer();
-      self.loadAll().then(function() {
-        self.saveAll().then(function() {
-          deferred.resolve(true);
-        });
-      });
-      return deferred.promise;
-    }
-  };
-
-  return self;
 }])
 
 .factory('ListProduct', ['$entity', function($entity) {
@@ -265,6 +246,42 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
 
 .factory('Account', ['$entity', function($entity) {
   return $entity('Account');
+}])
+
+.factory('SyncService', ['$q', '$sync', 'List', function($q, $sync, List) {
+  var ListSync = $sync('List', 'lists');
+  var ProductSync = $sync('Product', 'products');
+  var ListProductSync = $sync('ListProduct', 'list_products', function(object) {
+    return {
+      id: object.id,
+      list: object.list_id,
+      product: object.product_id,
+      ok: object.ok
+    };
+  }, function(object) {
+    return {
+      id: object.id,
+      list_id: object.list.id,
+      product_id: object.product.id,
+      ok: object.ok
+    };
+  });
+  return {
+    exec: function() {
+      var deferred = $q.defer();
+      var error = function(result) {
+        deferred.reject(result);
+      };
+      ProductSync.exec().then(function(result) {
+        ListSync.exec().then(function(result) {
+          ListProductSync.exec().then(function(result) {
+            deferred.resolve(result);
+          }, error);
+        }, error);
+      }, error);
+      return deferred.promise;
+    }
+  };
 }])
 
 /**

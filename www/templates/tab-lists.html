@@ -17,7 +17,7 @@
     <ion-list>
       <ion-item class="item-remove-animate item-icon-right" ng-repeat="list in lists" 
         type="item-text-wrap" href="#/tab/lists/{{list.id}}">
-        <h2>{{list.name}}</h2>
+        <h2>{{list.name}} {{list.shared() | json}}</h2>
         <p>{{list.created_at | date:'medium'}}</p>
         <ion-option-button class="button-positive" ng-click="share(list)">
           Compartilhar

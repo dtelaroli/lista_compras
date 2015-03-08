@@ -61,13 +61,23 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
   return self;
 }])
 
-.factory('List', ['$q', '$entity', 'ListProduct', function($q, $entity, ListProduct) {
+.factory('List', ['$q', '$entity', 'ListProduct', 'Share', function($q, $entity, ListProduct, Share) {
   var list = $entity('List', {
     lproducts: function(list) {
       var deferred = $q.defer();
 
       list.list_products.prefetch('product').list(function(lproducts) {
         deferred.resolve(lproducts);
+      });
+
+      return deferred.promise;
+    },
+    share: function(list) {
+      var deferred = $q.defer();
+
+      Share.filter('list', '=', list.id).then(function(shares) {
+        console.log(shares)
+        deferred.resolve(shares.length === 0 ? null : shares[0]);
       });
 
       return deferred.promise;
@@ -86,6 +96,10 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
 
 .factory('Account', ['$entity', function($entity) {
   return $entity('Account');
+}])
+
+.factory('Share', ['$entity', function($entity) {
+  return $entity('Share');
 }])
 
 .factory('ShareService', ['$resource', function($resource) {

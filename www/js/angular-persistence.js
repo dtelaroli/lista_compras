@@ -36,13 +36,13 @@ angular.module('ngPersistence', [])
 }])
 
 .factory('$entity', ['$db', '$q', function($db, $q) {
-  function modelFactory(name, extras, prefetch) {     
+  function modelFactory(name, extras, prefetchs) {     
     var Entity = $db.model(name);
 
     var _all = Entity.all().filter('sync', '<>', 'TRASH');
-    if(prefetch !== undefined) {
-      angular.forEach(prefetch, function(p) {
-        all = all.prefetch(p);
+    if(prefetchs !== undefined) {
+      angular.forEach(prefetchs, function(p) {
+        _all = _all.prefetch(p);
       });
     };
     var defaults = {

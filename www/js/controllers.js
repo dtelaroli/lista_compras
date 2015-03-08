@@ -12,6 +12,12 @@ angular.module('starter.controllers', ['ng-token-auth'])
   var self = {
     init: function() {
       List.all().then(function(lists) {
+        angular.forEach(lists, function(list) {
+          List.share(list, function(share) {
+            console.log(share)
+            list.shared = share;
+          });
+        });     
         $scope.lists = lists;
         self.clear();
       });      
@@ -97,7 +103,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
           $scope.lproducts = lproducts;        
           self.products(lproducts);
         });
-        $scope.list = list;
+        $scope.list = list;        
         self.clear();
       });
 

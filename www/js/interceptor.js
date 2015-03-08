@@ -23,8 +23,6 @@ angular.module('interceptors', [])
 
     return {
         request: function(config) {
-            config.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-            config.defaults.headers.common['ContentType'] = 'application/json;UTF-8';
             reset();
             NProgress.start();
             return config;

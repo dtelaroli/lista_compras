@@ -159,41 +159,7 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
         }, error);
       }, error);
       return deferred.promise;
-    },
-
-    receiveAll: function() {
-      var deferred = $q.defer();
-      var error = function(result) {
-        deferred.reject(result);
-      };
-      ProductSync.receiveAll().then(function(result) {
-        ListSync.receiveAll().then(function(result) {
-          ListProductSync.receiveAll().then(function(result) {
-            ShareSync.receiveAll().then(function(result) {
-              deferred.resolve(result);
-            }, error);
-          }, error);
-        }, error);
-      }, error);
-      return deferred.promise;
-    },
-
-    sendAll: function() {
-      var deferred = $q.defer();
-      var error = function(result) {
-        deferred.reject(result);
-      };
-      ProductSync.sendAll().then(function(result) {
-        ListSync.sendAll().then(function(result) {
-          ListProductSync.sendAll().then(function(result) {
-            ShareSync.sendAll().then(function(result) {
-              deferred.resolve(result);
-            }, error);
-          }, error);
-        }, error);
-      }, error);
-      return deferred.promise;
-    },
+    }
   };
 }])
 

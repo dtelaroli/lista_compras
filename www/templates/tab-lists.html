@@ -19,6 +19,9 @@
         type="item-text-wrap" href="#/tab/lists/{{list.id}}">
         <h2>{{list.name}}</h2>
         <p>{{list.created_at | date:'medium'}}</p>
+        <ion-option-button class="button-positive" ng-click="share(list)">
+          Compartilhar
+        </ion-option-button>
         <ion-option-button class="button-energized" ng-click="archive(list)">
           Arquivar
         </ion-option-button>

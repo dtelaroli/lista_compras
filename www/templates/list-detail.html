@@ -6,7 +6,7 @@
 -->
 <ion-view view-title="Lista de Compras">
   <ion-content class="padding">
-    <h3>Lista {{list.name}}</h3>
+    <h4>Lista {{list.name}}</h4>
 
     <form name="form" ng-submit="add()">
       <ion-list>
@@ -27,7 +27,7 @@
       <ion-item ng-repeat="lp in lproducts" class="item-toggle-option item-remove-animate capitalize">
         {{lp.product.name}}
         <label class="toggle toggle-balanced">
-          <input type="checkbox" ng-model="lp.ok" ng-change="update()">
+          <input type="checkbox" ng-model="lp.ok" ng-change="update(lp)">
          <div class="track">
            <div class="handle"></div>
          </div>

@@ -2,13 +2,13 @@ angular.module('starter.controllers', ['ng-token-auth'])
 
 .config(function($authProvider) {
     $authProvider.configure({
-        apiUrl: 'http://dtelaroli.org'
+        apiUrl: 'http://localhost:3000'
     });
 })
 
 .controller('DashCtrl', function($scope) {})
 
-.controller('ListsCtrl', ['$scope', 'List', function($scope, List) {
+.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'ShareService', function($scope, $ionicPopup, List, ShareService) {
   var self = {
     init: function() {
       List.all().then(function(lists) {
@@ -18,6 +18,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
     },
 
     clear: function() {
+      $scope.data = {invalid: false};
       $scope.list = {};
     }
   };
@@ -31,8 +32,51 @@ angular.module('starter.controllers', ['ng-token-auth'])
     });
   };
 
+  $scope.share = function(list) {
+    $ionicPopup.show({
+      template: '<input type="email" ng-model="data.email"><p ng-if="data.invalid">Email inválido</p>',
+      title: 'Compartilhar',
+      subTitle: 'Digite o email do seu amigo',
+      scope: $scope,
+      buttons: [
+        {text: 'Cancelar'},
+        {
+          text: '<b>Enviar</b>',
+          type: 'button-positive',
+          onTap: function(e) {
+            if (!$scope.data.email) {
+              e.preventDefault();
+              $scope.data.invalid = true;
+            }
+            else {                            
+              return $scope.data.email;
+            }
+          }
+        }
+      ]
+    }).then(function(response) {
+      ShareService.save({list_id: list.id, email: response}, function(success) {
+        $ionicPopup.alert({
+          title: 'Confirmação',
+          template: 'Lista compartilhada.'
+        });
+        self.clear();
+      }, function(result) {
+        if(result.status === 0) {
+          result = '404';
+        }
+        console.error(result);
+        $ionicPopup.alert({
+          title: 'Confirmação',
+          template: 'Usuário não encontrado'
+        });
+      });
+    });
+  };
+
   $scope.archive = function(list) {
-    List.remove(list).then(function() {
+    list.archived = true;
+    List.save(list, function() {
       self.init();
     });
   };
@@ -49,7 +93,7 @@ angular.module('starter.controllers', ['ng-token-auth'])
   var self = {
     init: function() {
       List.get($stateParams.listId).then(function(list) {
-        list.$lproducts(function(lproducts) {
+        List.lproducts(list, function(lproducts) {
           $scope.lproducts = lproducts;        
           self.products(lproducts);
         });
@@ -85,15 +129,22 @@ angular.module('starter.controllers', ['ng-token-auth'])
   $scope.add = function() {
     $scope.product.name = $scope.product.name.toLowerCase();
     Product.save($scope.product, function(saved) {
-      $scope.list.$add_product(saved, function(lp) {
-        $scope.lproducts.push(lp);        
+      ListProduct.save({
+        list: $scope.list.id,
+        product: saved.id
+      }, function(lp) {
+        persistence.flush();
+        $scope.lproducts.push(lp);
       });
       self.clear();
     });
   };
 
-  $scope.update = function() {
-    $scope.list.$flush();
+  $scope.update = function(item) {
+    if(item.sync !== 'NEW') {
+      item.sync = 'DIRTY';
+    }
+    ListProduct.save(item);
   };
 
   $scope.remove = function(lp) {
@@ -111,8 +162,8 @@ angular.module('starter.controllers', ['ng-token-auth'])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'Account', 'Product', 'SyncService', '$auth',
-    function($scope, $db, $ionicPopup, Account, Product, SyncService, $auth) {
+.controller('AccountCtrl', ['$scope', '$window', '$db', '$ionicPopup', 'Account', 'Product', 'SyncService', '$auth',
+    function($scope, $window, $db, $ionicPopup, Account, Product, SyncService, $auth) {
   $scope.settings = {
     enableFriends: true
   };
@@ -142,12 +193,16 @@ angular.module('starter.controllers', ['ng-token-auth'])
     error: function(errors) {  
       switch(typeof errors) {
         case 'object':
-          errors = errors.errors;
+          errors = errors.data.errors;
           break;
           
         case 'string':
           errors = [errors];
           break;
+        case undefined:
+          var errors = ['Indefinido'];
+          break;
+
       }
       $ionicPopup.alert({
         title: 'Erro',
@@ -181,9 +236,15 @@ angular.module('starter.controllers', ['ng-token-auth'])
   };
 
   $scope.sync = function() {
-    SyncService.exec().then(function(result) {
+    SyncService.exec().then(function(response) {
       self.confirm();
-    }, function(result) {
+      $ionicPopup.alert({
+        title: 'Confirmação',
+        template: 'Operação efetuada com sucesso!'
+      }).then(function() {
+        $window.location.reload(true);
+      });
+    }, function(response) {
       self.error(response);
     });
   };
@@ -193,8 +254,8 @@ angular.module('starter.controllers', ['ng-token-auth'])
       title: 'Limpar dados',
       template: 'Tem certeza?'
     })
-    .then(function(res) {
-      if(res) {
+    .then(function(response) {
+      if(response) {
         $db.reset().then(function() {
           $auth.signOut();
           self.init();

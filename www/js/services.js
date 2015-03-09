@@ -76,7 +76,6 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
       var deferred = $q.defer();
 
       Share.filter('list', '=', list.id).then(function(shares) {
-        console.log(shares)
         deferred.resolve(shares.length === 0 ? null : shares[0]);
       });
 
@@ -128,6 +127,7 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
     };
   });
   var ShareSync = $sync('Share', 'shares', function(object) {
+    console.log(object)
     object.list.sync = 'OK';
     List.save(object.list);
     angular.forEach(object.list_products, function(lp) {
@@ -140,9 +140,9 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
       });
     });
     return {
-      user_id: object.user.id,
-      user_name: object.user.name,
-      user_image: object.user.image,
+      user_id: object.by.id,
+      user_name: object.by.name,
+      user_image: object.by.image,
       list: object.list.id,
       created_at: object.created_at,
       sync: 'OK'

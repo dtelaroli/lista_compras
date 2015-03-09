@@ -27,3 +27,12 @@
 .capitalize {
   text-transform: capitalize;
 }
+
+.lists .item-avatar .item-content > img:first-child {
+	left: auto;
+	right: 16px;
+}
+
+.lists .item-avatar .item-content {
+	padding-left: 16px;
+}

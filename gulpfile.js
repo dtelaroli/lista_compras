@@ -6,6 +6,9 @@ var sass = require('gulp-sass');
 var minifyCss = require('gulp-minify-css');
 var rename = require('gulp-rename');
 var sh = require('shelljs');
+var replace = require('gulp-replace-task');  
+var args    = require('yargs').argv;  
+var fs      = require('fs');
 
 var paths = {
   sass: ['./scss/**/*.scss']
@@ -23,6 +26,25 @@ gulp.task('sass', function(done) {
     .pipe(rename({ extname: '.min.css' }))
     .pipe(gulp.dest('./www/css/'))
     .on('end', done);
+});
+
+gulp.task('replace', function () {  
+  // Get the environment from the command line
+  var env = args.env || 'development';
+
+  // Read the settings from the right file
+  var filename = env + '.json';
+  var settings = JSON.parse(fs.readFileSync('./config/' + filename, 'utf8'));
+
+  // Replace each placeholder with the correct value for the variable.  
+  gulp.src('www/js/env.js')  
+    .pipe(replace({
+      patterns: [{
+        match: 'ENDPOINT',
+        replacement: settings.ENDPOINT
+      }]
+    }))
+    .pipe(gulp.dest('www/js/build'));
 });
 
 gulp.task('watch', function() {

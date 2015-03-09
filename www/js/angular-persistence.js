@@ -1,4 +1,4 @@
-angular.module('ngPersistence', [])
+angular.module('ngPersistence', ['ngEnv'])
 
 .factory('$db', ['$q', function($q) {
   var self = {
@@ -175,11 +175,12 @@ angular.module('ngPersistence', [])
   return modelFactory;
 }])
 
-.service('$sync', ['$q', '$resource', '$entity', function($q, $resource, $entity) {
+.service('$sync', ['$q', '$resource', '$env', '$entity', function($q, $resource, $env, $entity) {
   function sync(name, resource, parse_in, out) {
     var Model = $entity(name);
+    console.log($env('ENDPOINT'))
     var Service = $resource('http://:end_point/:resource/:id.:format', {
-      end_point: 'localhost:3000', 
+      end_point: $env('ENDPOINT'), 
       resource: resource,
       format: 'json'
     }, {

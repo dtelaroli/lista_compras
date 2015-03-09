@@ -1,8 +1,8 @@
-angular.module('starter.controllers', ['ng-token-auth'])
+angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
 
-.config(function($authProvider) {
+.config(function($authProvider, $envProvider) {
     $authProvider.configure({
-        apiUrl: 'http://localhost:3000'
+        apiUrl: 'http://' + $envProvider.$get()('ENDPOINT')
     });
 })
 

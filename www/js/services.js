@@ -1,4 +1,4 @@
-angular.module('starter.services', ['ngPersistence', 'ngResource'])
+angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
 
 .run(['$db', '$model', function($db, $model) {
   $db.init({
@@ -102,9 +102,9 @@ angular.module('starter.services', ['ngPersistence', 'ngResource'])
   return $entity('Share');
 }])
 
-.factory('ShareService', ['$resource', function($resource) {
+.factory('ShareService', ['$resource', '$env', function($resource, $env) {
   return $resource('http://:end_point/shares/:id.:format', {
-      end_point: 'localhost:3000', 
+      end_point: $env('ENDPOINT'), 
       format: 'json'
     });
 }])

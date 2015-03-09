@@ -14,7 +14,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       List.all().then(function(lists) {
         angular.forEach(lists, function(list) {
           List.share(list, function(share) {
-            console.log(share)
             list.shared = share;
           });
         });     

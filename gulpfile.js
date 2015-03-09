@@ -28,6 +28,10 @@ gulp.task('sass', function(done) {
     .on('end', done);
 });
 
+gulp.task('watch', function() {
+  gulp.watch(paths.sass, ['sass']);
+});
+
 gulp.task('replace', function () {  
   // Get the environment from the command line
   var env = args.env || 'development';
@@ -45,10 +49,6 @@ gulp.task('replace', function () {
       }]
     }))
     .pipe(gulp.dest('www/js/build'));
-});
-
-gulp.task('watch', function() {
-  gulp.watch(paths.sass, ['sass']);
 });
 
 gulp.task('install', ['git-check'], function() {

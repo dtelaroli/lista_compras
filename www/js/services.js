@@ -76,7 +76,6 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
       var deferred = $q.defer();
 
       Share.filter('list', '=', list.id).then(function(shares) {
-        console.log(shares)
         deferred.resolve(shares.length === 0 ? null : shares[0]);
       });
 

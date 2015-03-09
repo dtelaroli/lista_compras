@@ -105,7 +105,6 @@ angular.module('ngPersistence', ['ngEnv'])
       
       remove: function(instance) {
         var deferred = $q.defer();   
-        console.log(instance)
         if(instance.sync === 'NEW') {
           persistence.remove(instance);
         }
@@ -178,7 +177,6 @@ angular.module('ngPersistence', ['ngEnv'])
 .service('$sync', ['$q', '$resource', '$env', '$entity', function($q, $resource, $env, $entity) {
   function sync(name, resource, parse_in, out) {
     var Model = $entity(name);
-    console.log($env('ENDPOINT'))
     var Service = $resource('http://:end_point/:resource/:id.:format', {
       end_point: $env('ENDPOINT'), 
       resource: resource,

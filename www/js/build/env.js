@@ -2,7 +2,7 @@ angular.module('ngEnv', [])
 
 .service('$env', function() {
   var self = {
-    ENDPOINT: 'localhost:3000'
+    ENDPOINT: 'dtelaroli.org'
   };
 
   return function(name) {

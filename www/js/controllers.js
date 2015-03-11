@@ -8,10 +8,26 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
 
 .controller('DashCtrl', function($scope) {})
 
-.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'Account', 'ShareService', function($scope, $ionicPopup, List, Account, ShareService) {
+.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'AccountService', 'ShareService', 
+    function($scope, $ionicPopup, List, AccountService, ShareService) {
   var self = {
     init: function() {
-      $scope.account = {};
+      self.load();
+
+      AccountService.init().then(function(account) {
+        $scope.account = account;
+      });
+
+      $scope.$root.$on('list:changed', function() {
+        self.load();
+      });
+
+      $scope.$root.$on('account:changed', function() {
+        $scope.account = AccountService.account;
+      });
+    },
+
+    load: function() {
       List.all().then(function(lists) {
         angular.forEach(lists, function(list) {
           List.share(list, function(share) {
@@ -21,9 +37,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
         $scope.lists = lists;
         self.clear();
       });
-      Account.first().then(function(account) {
-        $scope.account = account;
-      });
     },
 
     clear: function() {
@@ -31,6 +44,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       $scope.list = {};
     }
   };
+
   self.init();
 
   $scope.add = function() { 
@@ -178,16 +192,15 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$window', '$db', '$ionicPopup', 'Account', 'Product', 'SyncService', '$auth',
-    function($scope, $window, $db, $ionicPopup, Account, Product, SyncService, $auth) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'AccountService', 'SyncService', '$auth',
+    function($scope, $db, $ionicPopup, AccountService, SyncService, $auth) {
   $scope.settings = {
     enableFriends: true
   };
 
   var self = {
     init: function() {
-      $scope.account = {};
-      Account.first().then(function(account) {
+      AccountService.init().then(function(account) {
         if(account === undefined) {
           $scope.state = 'Unsigned';
         }
@@ -196,14 +209,26 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
           $scope.state = 'Signed';
         }
       });
+      $scope.$root.$on('account:changed', function() {
+        $scope.account = AccountService.account;
+        if($scope.account === null) {
+          $scope.state = 'Unsigned';
+        }
+        else {
+          $scope.state = 'Signed';
+        }
+      });
     },
 
-    confirm: function() {
-      self.init();
-      $ionicPopup.alert({
+    confirm: function(callback) {
+      var alert = $ionicPopup.alert({
         title: 'Confirmação',
         template: 'Operação efetuada com sucesso!'
       });
+
+      if(callback !== undefined) {
+        alert.then(callback);
+      }
     },
 
     error: function(errors) {  
@@ -227,8 +252,9 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
     },
 
     create: function(response) {
-      Account.save(response, function() {
-        self.confirm();
+      AccountService.save(response).then(function(account) {
+        AccountService.account = account;
+        $scope.$emit('account:changed');
       });
     }
   };
@@ -253,12 +279,8 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
 
   $scope.sync = function() {
     SyncService.exec().then(function(response) {
-      self.confirm();
-      $ionicPopup.alert({
-        title: 'Confirmação',
-        template: 'Operação efetuada com sucesso!'
-      }).then(function() {
-        $window.location.reload(true);
+      self.confirm(function() {
+        $scope.$emit('list:changed');
       });
     }, function(response) {
       self.error(response);
@@ -274,7 +296,8 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       if(response) {
         $db.reset().then(function() {
           $auth.signOut();
-          self.init();
+          AccountService.account = null;
+          $scope.$emit('account:changed');
         });        
       }
     });

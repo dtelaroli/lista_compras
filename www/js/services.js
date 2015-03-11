@@ -108,6 +108,28 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     });
 }])
 
+.service('AccountService', ['$q', 'Account', function($q, Account) {
+  var self = this;
+  
+  this.init = function() {
+    var deferred = $q.defer();
+    Account.first().then(function(account) {
+      self.account = account;
+      deferred.resolve(account);
+    });
+    return deferred.promise;
+  };
+
+  this.save = function(account) {
+    var deferred = $q.defer();
+    Account.save(account, function(account) {
+      self.account = account;
+      deferred.resolve(account);
+    });
+    return deferred.promise;
+  };
+}])
+
 .service('SyncService', ['$q', '$sync', 'List', 'ListProduct', function($q, $sync, List, ListProduct) {
   var ListSync = $sync('List', 'lists');
   var ProductSync = $sync('Product', 'products');
@@ -155,26 +177,25 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     }
   });
 
-  return {
-    exec: function() {
-      var deferred = $q.defer();
-      var error = function(result) {
-        deferred.reject(result);
-        console.error(result);
-      };
-      
-      ProductSync.exec().then(function(result) {
-        ListSync.exec().then(function(result) {
-          ListProductSync.exec().then(function(result) {
-            ShareSync.exec().then(function(result) {
-              deferred.resolve(result);
-            }, error);
+  this.exec = function() {
+    var deferred = $q.defer();
+    var error = function(result) {
+      deferred.reject(result);
+      console.error(result);
+    };
+    
+    ProductSync.exec().then(function(result) {
+      ListSync.exec().then(function(result) {
+        ListProductSync.exec().then(function(result) {
+          ShareSync.exec().then(function(result) {
+            deferred.resolve(result);
           }, error);
         }, error);
       }, error);
-      return deferred.promise;
-    }
+    }, error);
+    return deferred.promise;
   };
+  
 }])
 
 /**

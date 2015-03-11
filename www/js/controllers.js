@@ -8,9 +8,10 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
 
 .controller('DashCtrl', function($scope) {})
 
-.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'ShareService', function($scope, $ionicPopup, List, ShareService) {
+.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'Account', 'ShareService', function($scope, $ionicPopup, List, Account, ShareService) {
   var self = {
     init: function() {
+      $scope.account = {};
       List.all().then(function(lists) {
         angular.forEach(lists, function(list) {
           List.share(list, function(share) {
@@ -19,7 +20,10 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
         });     
         $scope.lists = lists;
         self.clear();
-      });      
+      });
+      Account.first().then(function(account) {
+        $scope.account = account;
+      });
     },
 
     clear: function() {
@@ -70,13 +74,20 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
         if(result.status === 0) {
           result = '404';
         }
-        console.error(result);
+        
         $ionicPopup.alert({
           title: 'Confirmação',
-          template: 'Usuário não encontrado'
+          template: result.data.errors.join('<br />')
         });
       });
     });
+  };
+
+  $scope.info = function(share) {
+    $ionicPopup.alert({
+      title: 'Lista Compartilhada',
+      template: 'Nome: ' + share.user_name
+    })
   };
 
   $scope.archive = function(list) {

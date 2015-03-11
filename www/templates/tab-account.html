@@ -12,24 +12,24 @@
       </ion-item> -->
     </ion-list>
     <div class="padding">
-      <p ng-if="state === 'Unsigned'">
+      <p ng-if="account.state === 'Unsigned'">
         Faça login para você poder compartilhar suas listas e salvar na núvem.
       </p>
 
-      <div ng-if="state === 'Signed'">
+      <div ng-if="account.state === 'Signed'">
         <p>Ola {{account.name}}!</p>
         <p>Sua conta está ativa.</p>
       </div>
     </div>
 
-    <button ng-click="facebook()" ng-if="state === 'Unsigned'" class="button button-full">
+    <button ng-click="facebook()" ng-if="account.state === 'Unsigned'" class="button button-full">
       Login com Facebook
     </button>
-    <button ng-click="google()" ng-if="state === 'Unsigned'" class="button button-full">
+    <button ng-click="google()" ng-if="account.state === 'Unsigned'" class="button button-full">
       Login com Google
     </button>
 
-    <button ng-click="sync()" ng-if="state === 'Signed'" class="button button-full">
+    <button ng-click="sync()" ng-if="account.state === 'Signed'" class="button button-full">
       Sincronizar com o servidor
     </button>
 

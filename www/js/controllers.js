@@ -8,22 +8,15 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
 
 .controller('DashCtrl', function($scope) {})
 
-.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'AccountService', 'ShareService', 
-    function($scope, $ionicPopup, List, AccountService, ShareService) {
+.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'AccountService', 'AccountFactory', 'ShareService', 
+    function($scope, $ionicPopup, List, AccountService, AccountFactory, ShareService) {
   var self = {
     init: function() {
+      $scope.account = AccountFactory;
+      AccountService.init();
       self.load();
-
-      AccountService.init().then(function(account) {
-        $scope.account = account;
-      });
-
       $scope.$root.$on('list:changed', function() {
         self.load();
-      });
-
-      $scope.$root.$on('account:changed', function() {
-        $scope.account = AccountService.account;
       });
     },
 
@@ -192,32 +185,16 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'AccountService', 'SyncService', '$auth',
-    function($scope, $db, $ionicPopup, AccountService, SyncService, $auth) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'AccountService', 'AccountFactory', 'SyncService', '$auth',
+    function($scope, $db, $ionicPopup, AccountService, AccountFactory, SyncService, $auth) {
   $scope.settings = {
     enableFriends: true
   };
 
   var self = {
     init: function() {
-      AccountService.init().then(function(account) {
-        if(account === undefined) {
-          $scope.state = 'Unsigned';
-        }
-        else {
-          $scope.account = account;
-          $scope.state = 'Signed';
-        }
-      });
-      $scope.$root.$on('account:changed', function() {
-        $scope.account = AccountService.account;
-        if($scope.account === null) {
-          $scope.state = 'Unsigned';
-        }
-        else {
-          $scope.state = 'Signed';
-        }
-      });
+      $scope.account = AccountFactory;
+      AccountService.init();
     },
 
     confirm: function(callback) {
@@ -252,10 +229,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
     },
 
     create: function(response) {
-      AccountService.save(response).then(function(account) {
-        AccountService.account = account;
-        $scope.$emit('account:changed');
-      });
+      AccountService.save(response);
     }
   };
 
@@ -296,8 +270,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       if(response) {
         $db.reset().then(function() {
           $auth.signOut();
-          AccountService.account = null;
-          $scope.$emit('account:changed');
+          AccountFactory.reset();
         });        
       }
     });

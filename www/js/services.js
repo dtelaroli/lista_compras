@@ -108,13 +108,13 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     });
 }])
 
-.service('AccountService', ['$q', 'Account', function($q, Account) {
+.service('AccountService', ['$q', 'Account', 'AccountFactory', function($q, Account, AccountFactory) {
   var self = this;
-  
+
   this.init = function() {
     var deferred = $q.defer();
     Account.first().then(function(account) {
-      self.account = account;
+      AccountFactory.data = account;
       deferred.resolve(account);
     });
     return deferred.promise;
@@ -123,12 +123,27 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
   this.save = function(account) {
     var deferred = $q.defer();
     Account.save(account, function(account) {
-      self.account = account;
+      AccountFactory.set(account);
       deferred.resolve(account);
     });
     return deferred.promise;
   };
 }])
+
+.factory('AccountFactory', function(Account) {
+  var self = {
+    data: null,
+    state: 'Unsigned',
+    set: function(account) {
+      self.data = account;
+      self.state = account === null ? 'Unsigned' : 'Signed';
+    },
+    reset: function() {
+      self.set(null);
+    }
+  };
+  return self;
+})
 
 .service('SyncService', ['$q', '$sync', 'List', 'ListProduct', function($q, $sync, List, ListProduct) {
   var ListSync = $sync('List', 'lists');

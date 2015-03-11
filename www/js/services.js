@@ -224,25 +224,28 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     }
   });
 
-  this.exec = function() {
-    var deferred = $q.defer();
-    var error = function(result) {
-      deferred.reject(result);
-      console.error(result);
-    };
-    
-    ProductSync.exec().then(function(result) {
-      ListSync.exec().then(function(result) {
-        ListProductSync.exec().then(function(result) {
-          ShareSync.exec().then(function(result) {
-            deferred.resolve(result);
+  var self = {
+    exec: function() {
+      var deferred = $q.defer();
+      var error = function(result) {
+        deferred.reject(result);
+        console.error(result);
+      };
+      
+      ProductSync.exec().then(function(result) {
+        ListSync.exec().then(function(result) {
+          ListProductSync.exec().then(function(result) {
+            ShareSync.exec().then(function(result) {
+              deferred.resolve(result);
+            }, error);
           }, error);
         }, error);
       }, error);
-    }, error);
-    return deferred.promise;
+      return deferred.promise;
+    }
   };
   
+  return self;
 }])
 
 /**

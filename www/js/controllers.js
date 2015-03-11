@@ -17,7 +17,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       $scope.account.init();
       $scope.lists = ListService;
       $scope.lists.init();
-      $scope.list = {};
+      $scope.list = {};      
     },
 
     clear: function() {
@@ -94,6 +94,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
   };
 
   self.init();
+  self.clear();
 }])
 
 .controller('ListDetailCtrl', ['$scope', '$stateParams', 'List', 'Product', 'ListProduct',
@@ -106,7 +107,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
           self.products(lproducts);
         });
         $scope.list = list;        
-        self.clear();
       });
 
     },
@@ -128,7 +128,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       $scope.product = {};
     }
   };
-  self.init();
 
   $scope.select = function(item) {
     $scope.product = new Product(item);
@@ -160,6 +159,9 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       self.init();
     });
   };
+
+  self.init();
+  self.clear();
 }])
 
 .controller('FriendsCtrl', function($scope, Friends) {

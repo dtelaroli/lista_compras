@@ -2,7 +2,8 @@ angular.module('ngEnv', [])
 
 .service('$env', function() {
   var self = {
-    ENDPOINT: '@@ENDPOINT'
+  	PROTOCOL: '@@PROTOCOL',
+    ENDPOINT: '@@ENDPOINT',
   };
 
   return function(name) {

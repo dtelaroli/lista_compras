@@ -1,3 +1,4 @@
 {
-  "ENDPOINT": "localhost:3000"
+  "ENDPOINT": "localhost:3000",
+  "PROTOCOL": "http"
 }

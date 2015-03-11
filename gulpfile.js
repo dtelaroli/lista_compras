@@ -46,6 +46,9 @@ gulp.task('replace', function () {
       patterns: [{
         match: 'ENDPOINT',
         replacement: settings.ENDPOINT
+      }, {
+        match: 'PROTOCOL',
+        replacement: settings.PROTOCOL
       }]
     }))
     .pipe(gulp.dest('www/js/build'));

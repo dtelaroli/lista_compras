@@ -1,3 +1,4 @@
 {
-  "ENDPOINT": "dtelaroli.org"
+  "ENDPOINT": "dtelaroli.org",
+  "PROTOCOL": "https"
 }

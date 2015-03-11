@@ -102,48 +102,49 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
 }])
 
 .factory('ShareService', ['$resource', '$env', function($resource, $env) {
-  return $resource('http://:end_point/shares/:id.:format', {
-      end_point: $env('ENDPOINT'), 
-      format: 'json'
-    });
+  return $resource(':protocal://:end_point/shares/:id.:format', {
+    protocol: $env('PROTOCOL'),  
+    end_point: $env('ENDPOINT'), 
+    format: 'json'
+  });
 }])
 
-.service('AccountService', ['$q', 'Account', 'AccountFactory', function($q, Account, AccountFactory) {
-  var self = this;
-
-  this.init = function() {
-    var deferred = $q.defer();
-    Account.first().then(function(account) {
-      AccountFactory.data = account;
-      deferred.resolve(account);
-    });
-    return deferred.promise;
-  };
-
-  this.save = function(account) {
-    var deferred = $q.defer();
-    Account.save(account, function(account) {
-      AccountFactory.set(account);
-      deferred.resolve(account);
-    });
-    return deferred.promise;
-  };
-}])
-
-.factory('AccountFactory', function(Account) {
+.service('AccountService', ['$q', 'Account', function($q, Account) {
   var self = {
-    data: null,
-    state: 'Unsigned',
+    init: function() {
+      var deferred = $q.defer();
+      Account.first().then(function(account) {
+        self.set(account);
+        deferred.resolve(account);
+      });
+      return deferred.promise;
+    },
+
+    save: function(account) {
+      var deferred = $q.defer();
+      Account.save(account, function(account) {
+        self.set(account);
+        deferred.resolve(account);
+      });
+      return deferred.promise;
+    },
+
     set: function(account) {
       self.data = account;
       self.state = account === null ? 'Unsigned' : 'Signed';
     },
+
     reset: function() {
       self.set(null);
-    }
+    },
+
+    data: null,
+
+    state: 'Unsigned'
   };
+
   return self;
-})
+}])
 
 .service('SyncService', ['$q', '$sync', 'List', 'ListProduct', function($q, $sync, List, ListProduct) {
   var ListSync = $sync('List', 'lists');

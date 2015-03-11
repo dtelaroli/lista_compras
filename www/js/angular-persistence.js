@@ -177,7 +177,8 @@ angular.module('ngPersistence', ['ngEnv'])
 .service('$sync', ['$q', '$resource', '$env', '$entity', function($q, $resource, $env, $entity) {
   function sync(name, resource, parse_in, out) {
     var Model = $entity(name);
-    var Service = $resource('http://:end_point/:resource/:id.:format', {
+    var Service = $resource(':protocol://:end_point/:resource/:id.:format', {
+      protocol: $env('PROTOCOL'),
       end_point: $env('ENDPOINT'), 
       resource: resource,
       format: 'json'

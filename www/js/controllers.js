@@ -1,19 +1,20 @@
 angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
 
 .config(function($authProvider, $envProvider) {
-    $authProvider.configure({
-        apiUrl: 'http://' + $envProvider.$get()('ENDPOINT')
-    });
+  $env = $envProvider.$get();
+  $authProvider.configure({
+      apiUrl: $env('PROTOCOL') + '://' + $env('ENDPOINT')
+  });
 })
 
 .controller('DashCtrl', function($scope) {})
 
-.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'AccountService', 'AccountFactory', 'ShareService', 
-    function($scope, $ionicPopup, List, AccountService, AccountFactory, ShareService) {
+.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'AccountService', 'ShareService', 
+    function($scope, $ionicPopup, List, AccountService, ShareService) {
   var self = {
     init: function() {
-      $scope.account = AccountFactory;
-      AccountService.init();
+      $scope.account = AccountService;
+      $scope.account.init();
       self.load();
       $scope.$root.$on('list:changed', function() {
         self.load();
@@ -37,8 +38,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       $scope.list = {};
     }
   };
-
-  self.init();
 
   $scope.add = function() { 
     $scope.list.created_at = new Date();
@@ -109,6 +108,8 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       self.init();
     });
   };
+
+  self.init();
 }])
 
 .controller('ListDetailCtrl', ['$scope', '$stateParams', 'List', 'Product', 'ListProduct',
@@ -185,16 +186,16 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'AccountService', 'AccountFactory', 'SyncService', '$auth',
-    function($scope, $db, $ionicPopup, AccountService, AccountFactory, SyncService, $auth) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'AccountService', 'SyncService', '$auth',
+    function($scope, $db, $ionicPopup, AccountService, SyncService, $auth) {
   $scope.settings = {
     enableFriends: true
   };
 
   var self = {
     init: function() {
-      $scope.account = AccountFactory;
-      AccountService.init();
+      $scope.account = AccountService;
+      $scope.account.init();
     },
 
     confirm: function(callback) {
@@ -229,7 +230,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
     },
 
     create: function(response) {
-      AccountService.save(response);
+      $scope.account.save(response);
     }
   };
 
@@ -270,7 +271,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       if(response) {
         $db.reset().then(function() {
           $auth.signOut();
-          AccountFactory.reset();
+          $scope.account.reset();
         });        
       }
     });

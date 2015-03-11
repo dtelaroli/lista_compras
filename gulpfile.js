@@ -34,7 +34,7 @@ gulp.task('watch', function() {
 
 gulp.task('replace', function () {  
   // Get the environment from the command line
-  var env = args.env || 'development';
+  var env = args.e || 'development';
 
   // Read the settings from the right file
   var filename = env + '.json';

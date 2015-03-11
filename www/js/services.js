@@ -102,11 +102,43 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
 }])
 
 .factory('ShareService', ['$resource', '$env', function($resource, $env) {
-  return $resource(':protocal://:end_point/shares/:id.:format', {
+  return $resource(':protocol://:end_point/shares/:id.:format', {
     protocol: $env('PROTOCOL'),  
     end_point: $env('ENDPOINT'), 
     format: 'json'
   });
+}])
+
+.service('ListService', ['List', function(List) {
+  var self = {
+    init: function() {
+      List.all().then(function(lists) {
+        angular.forEach(lists, function(list) {
+          List.share(list, function(share) {
+            if(share !== null) {
+              list.shared = share;
+            }
+          });
+        });     
+        self.set(lists);
+      });
+    },
+
+    data: [],
+
+    set: function(lists) {
+      self.data = lists;
+    },
+
+    save: function(list) {
+      list.created_at = new Date();
+      List.save(list, function(result) {
+        self.data.push(result);
+      });
+    }
+  };
+
+  return self;
 }])
 
 .service('AccountService', ['$q', 'Account', function($q, Account) {
@@ -131,11 +163,11 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
 
     set: function(account) {
       self.data = account;
-      self.state = account === null ? 'Unsigned' : 'Signed';
+      self.state = account === undefined ? 'Unsigned' : 'Signed';
     },
 
     reset: function() {
-      self.set(null);
+      self.set(undefined);
     },
 
     data: null,
@@ -165,7 +197,6 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     };
   });
   var ShareSync = $sync('Share', 'shares', function(object) {
-    console.log(object)
     object.list.sync = 'OK';
     List.save(object.list);
     angular.forEach(object.list_products, function(lp) {

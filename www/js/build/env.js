@@ -2,7 +2,7 @@ angular.module('ngEnv', [])
 
 .service('$env', function() {
   var self = {
-  	PROTOCOL: 'https',
+  	PROTOCOL: 'http',
     ENDPOINT: 'dtelaroli.org',
   };
 

@@ -15,7 +15,7 @@
     <br />
 
     <ion-list class="lists">
-      <ion-item ng-show="list.shared === null" class="item-avatar item-remove-animate item-icon-right" type="item-text-wrap" ng-repeat="list in lists" 
+      <ion-item ng-show="list.shared === undefined" class="item-avatar item-remove-animate item-icon-right" type="item-text-wrap" ng-repeat="list in lists.data" 
         href="#/tab/lists/{{list.id}}">
         <img ng-src="{{account.data.image}}">
         <h2>{{list.name}}</h2>
@@ -30,7 +30,7 @@
           Apagar
         </ion-option-button>
       </ion-item>
-      <ion-item ng-show="list.shared !== null" class="item-avatar item-remove-animate item-icon-right" type="item-text-wrap" ng-repeat="list in lists" 
+      <ion-item ng-show="list.shared !== undefined" class="item-avatar item-remove-animate item-icon-right" type="item-text-wrap" ng-repeat="list in lists.data" 
         href="#/tab/lists/{{list.id}}">
         <img ng-src="{{list.shared.user_image}}">
         <h2>{{list.name}}</h2>

@@ -9,28 +9,15 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
 
 .controller('DashCtrl', function($scope) {})
 
-.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'AccountService', 'ShareService', 
-    function($scope, $ionicPopup, List, AccountService, ShareService) {
+.controller('ListsCtrl', ['$scope', '$ionicPopup', 'List', 'ListService', 'AccountService', 'ShareService', 
+    function($scope, $ionicPopup, List, ListService, AccountService, ShareService) {
   var self = {
     init: function() {
       $scope.account = AccountService;
       $scope.account.init();
-      self.load();
-      $scope.$root.$on('list:changed', function() {
-        self.load();
-      });
-    },
-
-    load: function() {
-      List.all().then(function(lists) {
-        angular.forEach(lists, function(list) {
-          List.share(list, function(share) {
-            list.shared = share;
-          });
-        });     
-        $scope.lists = lists;
-        self.clear();
-      });
+      $scope.lists = ListService;
+      $scope.lists.init();
+      $scope.list = {};
     },
 
     clear: function() {
@@ -39,12 +26,9 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
     }
   };
 
-  $scope.add = function() { 
-    $scope.list.created_at = new Date();
-    List.save($scope.list, function(list) {
-      $scope.lists.push(list);
-      self.clear();
-    });
+  $scope.add = function() {    
+    $scope.lists.save($scope.list);
+    self.clear();    
   };
 
   $scope.share = function(list) {
@@ -231,6 +215,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
 
     create: function(response) {
       $scope.account.save(response);
+      self.confirm();
     }
   };
 

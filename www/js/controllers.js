@@ -60,15 +60,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
           template: 'Lista compartilhada.'
         });
         self.clear();
-      }, function(result) {
-        if(result.status === 0) {
-          result = '404';
-        }
-        
-        $ionicPopup.alert({
-          title: 'Confirmação',
-          template: result.data.errors.join('<br />')
-        });
       });
     });
   };
@@ -195,26 +186,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
       }
     },
 
-    error: function(errors) {  
-      switch(typeof errors) {
-        case 'object':
-          errors = errors.data.errors;
-          break;
-          
-        case 'string':
-          errors = [errors];
-          break;
-        case undefined:
-          var errors = ['Indefinido'];
-          break;
-
-      }
-      $ionicPopup.alert({
-        title: 'Erro',
-        template: errors.join('<br />')
-      });
-    },
-
     create: function(response) {
       $scope.account.save(response);
       self.confirm();
@@ -225,7 +196,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
     $auth.authenticate('google').then(function(response) {
       self.create(response);
     }, function(response) { 
-      self.error(response);
+      $scope.$emit('app:error', response);
     });
   };
 
@@ -233,7 +204,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
     $auth.authenticate('facebook').then(function(response) { 
       self.create(response);
     }, function(response) { 
-      self.error(response);
+      $scope.$emit('app:error', response);
     });
   };
 
@@ -242,8 +213,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
       self.confirm(function() {
         $scope.$emit('list:changed');
       });
-    }, function(response) {
-      self.error(response);
     });
   };
 

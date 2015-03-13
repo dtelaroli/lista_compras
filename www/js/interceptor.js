@@ -13,13 +13,15 @@ angular.module('interceptors', [])
         },
         responseError: function(rejection) {
             switch(rejection.status) {
-            case  400:
-                parse(rejection);
+            case  200:
                 break;
 
             case 401:
                 $rootScope.$broadcast('http:401');
                 break;
+
+            default:
+                $rootScope.$broadcast('http:error', rejection);
             }
 
             $rootScope.$broadcast('loading:hide');
@@ -29,12 +31,19 @@ angular.module('interceptors', [])
   });
 })
 
-.run(function($rootScope, $ionicLoading) {
+.run(function($rootScope, $ionicLoading, $ionicPopup) {
   $rootScope.$on('loading:show', function() {
     $ionicLoading.show({template: 'Carregando...'});
   });
 
   $rootScope.$on('loading:hide', function() {
     $ionicLoading.hide();
+  });
+
+  $rootScope.$on('app:error', function(event, rejection) {
+    $ionicPopup.alert({
+      title: 'Erro',
+      template: rejection.errors.join('<br />')
+    });
   });
 });

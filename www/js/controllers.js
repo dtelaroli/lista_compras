@@ -1,4 +1,4 @@
-angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
+angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors'])
 
 .config(function($authProvider, $envProvider) {
   $env = $envProvider.$get();
@@ -221,8 +221,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
     }
   };
 
-  self.init();  
-
   $scope.google = function() {
     $auth.authenticate('google').then(function(response) {
       self.create(response);
@@ -263,4 +261,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv'])
       }
     });
   };
+
+  self.init();
 }]);

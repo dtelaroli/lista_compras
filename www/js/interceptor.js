@@ -1,85 +1,40 @@
 angular.module('interceptors', [])
     
-.factory('httpInterceptor', ['$q', '$rootScope', function ($q, $rootScope) {
-    var parse = function(rejection) {
-        $rootScope.$errors = [];
-        for(var index in rejection.data) {
-            var message = index + ' ' + rejection.data[index].join(' and ');
-            $rootScope.$errors.push(message);
-        }
-        $rootScope.$broadcast('errors');
-    };
-
-    var reset = function() {
-        $rootScope.$message = null;
-        $rootScope.$errors = [];
-        NProgress.done();
-    };
-
-    $rootScope.$success = function(message) {
-        $rootScope.$message = message;
-        $rootScope.$broadcast('success');
-    };
-
+.config(function($httpProvider) {
+  $httpProvider.interceptors.push(function($rootScope) {
     return {
         request: function(config) {
-            reset();
-            NProgress.start();
-            return config;
+          $rootScope.$broadcast('loading:show')
+            return config
         },
-        response: function(config) { 
-            reset();               
-            return config;
+        response: function(response) {
+            $rootScope.$broadcast('loading:hide')
+            return response
         },
         responseError: function(rejection) {
-            if(rejection.status == 400) {
+            switch(rejection.status) {
+            case  400:
                 parse(rejection);
+                break;
+
+            case 401:
+                $rootScope.$broadcast('http:401');
+                break;
             }
-                  
-            NProgress.done();
+
+            $rootScope.$broadcast('loading:hide');
             return $q.reject(rejection);
         }
     };
-}])
+  });
+})
 
-.factory('jsonInterceptor', [function() {
-    var regexIso8601 = /^(\d{4})-(\d{2})-(\d{2})(\s(\d{2}):(\d{2}):(\d{2})?)?$/;
+.run(function($rootScope, $ionicLoading) {
+  $rootScope.$on('loading:show', function() {
+    $ionicLoading.show({template: 'Carregando...'});
+  });
 
-    function convertDateStringsToDates(input) {
-        // Ignore things that aren't objects.
-        if (typeof input !== 'object') return input;
-
-        for (var key in input) {
-            if (!input.hasOwnProperty(key)) continue;
-
-            var value = input[key];
-            var match;
-            // Check for string properties which look like dates.
-            if (typeof value === 'string' && (match = value.match(regexIso8601))) {
-                var date = new Date(match[1], match[2] - 1, match[3]);
-                var date_time = new Date(match[1], match[2] - 1, match[3], match[4], match[5], match[6]);
-                if (date !== null) {
-                    input[key] = date;
-                }
-                else if(date_time !== null) {
-                    input[key] = date_time;
-                }
-            } else if (typeof value === 'object') {
-                // Recurse into object
-                convertDateStringsToDates(value);
-            }
-        }
-    }
-
-    return {
-        response: function(responseData) {
-            var converted = convertDateStringsToDates(responseData);
-            return converted == null ? responseData : converted;
-        }
-    };
-}])
-
-.config(['$httpProvider', function($httpProvider) {
-    $httpProvider.interceptors.push('httpInterceptor');
-    $httpProvider.interceptors.push('jsonInterceptor');
-}]);
+  $rootScope.$on('loading:hide', function() {
+    $ionicLoading.hide();
+  });
+});

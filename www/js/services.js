@@ -158,6 +158,8 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     },
 
     save: function(account) {
+      console.log(account.name)
+      console.log(account.image)
       var deferred = $q.defer();
       Account.save(account, function(account) {
         self.set(account);
@@ -275,8 +277,8 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
   }
 })
 
-.service('authService', ['$http', '$stateParams', '$q', '$location', '$window', '$auth',
-  function ($http, $stateParams, $q, $location, $window, $auth) {
+.service('authService', ['$rootScope', '$http', '$stateParams', '$q', '$location', '$window', '$auth',
+  function ($rootScope, $http, $stateParams, $q, $location, $window, $auth) {
     var APIURL = 'http://dtelaroli.org';
     var _this = this;
 
@@ -311,27 +313,11 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     // function called when the browser is closed
     function browserOnClose (output){
 //      get code from response url
-      var code = output.url.toString(),
-          authResponse = output.response[0],
-          authResponseQueryString = authResponse.substr(authResponse.indexOf("#") + 1),
-          clientIdRegex = /\?client_id=(.*)&amp;expiry/,
-          expiryRegex = /expiry=(.*)&amp;token/,
-          tokenRegex = /token=(.*)&amp;uid/,
-          uidRegex = /uid=(.*)<\/p>/,
-          clientId = authResponseQueryString.match(clientIdRegex)[1],
-          expiry = authResponseQueryString.match(expiryRegex)[1],
-          token = authResponseQueryString.match(tokenRegex)[1],
-          uid = authResponseQueryString.match(uidRegex)[1],
-          user = {
-            client_id: clientId,
-            expiry: expiry,
-            auth_token: token,
-            uid: uid
-          };
-
+      var out = output.response[0].replace(/\n/gm, "").replace(/.+>(.+)<\/p>.+/gm, "{$1}");
+      var json = angular.fromJson(out);
       $auth.initDfd();
-      $auth.handleValidAuth(user, true);
-      return user;
+      $auth.handleValidAuth(json, true);
+      return json;
     }
 
     function getAuthCodeFromResponse(browserWindow){

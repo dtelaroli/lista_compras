@@ -163,8 +163,8 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'AccountService', 'SyncService', '$auth',
-    function($scope, $db, $ionicPopup, AccountService, SyncService, $auth) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'AccountService', 'SyncService', '$auth', 'authService',
+    function($scope, $db, $ionicPopup, AccountService, SyncService, $auth, auth) {
   $scope.settings = {
     enableFriends: true
   };
@@ -200,13 +200,21 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
     });
   };
 
-   $scope.facebook = function() {
+  $scope.facebook = function() {
     $auth.authenticate('facebook').then(function(response) { 
       self.create(response);
     }, function(response) { 
       $scope.$emit('app:error', response);
     });
   };
+
+  $scope.login = function() {
+    auth.login().then(function(response) {
+      self.create(response);
+    }, function(response) { 
+      $scope.$emit('app:error', response);
+    });
+  }
 
   $scope.sync = function() {
     SyncService.exec().then(function(response) {

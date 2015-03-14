@@ -221,8 +221,8 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
       title: 'Limpar dados',
       template: 'Tem certeza?'
     })
-    .then(function(response) {
-      if(response) {
+    .then(function(option) {
+      if(option) {
         $db.reset().then(function() {
           $auth.signOut();
           $scope.account.reset();

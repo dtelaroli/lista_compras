@@ -11,36 +11,30 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
 }])
 
 .factory('$model', [function() {
+  var Sync = persistence.defineMixin('Sync', {
+    sync: 'TEXT'
+  });
+
   var List = persistence.define('List', {
     name: 'TEXT',
     archived: 'BOOL',
-    created_at: 'DATE',
-    sync: 'TEXT'
+    created_at: 'DATE'
   });
 
   var Product = persistence.define('Product', {
-    name: 'TEXT',
-    sync: 'TEXT'
+    name: 'TEXT'
   });
 
   var ListProduct = persistence.define('ListProduct', {
-    ok: 'BOOL',
-    sync: 'TEXT'
+    ok: 'BOOL'
   });
-
-  List.hasMany('list_products', ListProduct, 'list');
-  ListProduct.hasOne('list', List);
-  ListProduct.hasOne('product', Product);
 
   var Share = persistence.define('Share', {
     user_id: 'INT',
     user_name: 'TEXT',
     user_image: 'TEXT',
     created_at: 'DATE',
-    sync: 'TEXT'
   });
-
-  Share.hasOne('list', List);
 
   var Account = persistence.define('Account', {
     name: 'TEXT',
@@ -50,10 +44,20 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     image: 'TEXT'
   });
 
+  List.hasMany('list_products', ListProduct, 'list');
+  ListProduct.hasOne('list', List);
+  ListProduct.hasOne('product', Product);
+  Share.hasOne('list', List);
+
+  List.is(Sync);
+  Product.is(Sync);
+  ListProduct.is(Sync);
+  Share.is(Sync);
+
   var self = {
+    Product: Product,
     List: List,
     ListProduct: ListProduct,
-    Product: Product,
     Share: Share,
     Account: Account
   };
@@ -72,6 +76,7 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
 
       return deferred.promise;
     },
+
     share: function(list) {
       var deferred = $q.defer();
 
@@ -119,7 +124,7 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
               list.shared = share;
             }
           });
-        });     
+        });
         self.set(lists);
       });
     },
@@ -227,20 +232,15 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
   var self = {
     exec: function() {
       var deferred = $q.defer();
-      var error = function(result) {
+            
+      ProductSync().then(ListSync)
+      .then(ListProductSync)
+      .then(ShareSync)
+      .then(function(result) {
+        deferred.resolve(result);
+      }).catch(function(result) {
         deferred.reject(result);
-        console.error(result);
-      };
-      
-      ProductSync.exec().then(function(result) {
-        ListSync.exec().then(function(result) {
-          ListProductSync.exec().then(function(result) {
-            ShareSync.exec().then(function(result) {
-              deferred.resolve(result);
-            }, error);
-          }, error);
-        }, error);
-      }, error);
+      });
       return deferred.promise;
     }
   };

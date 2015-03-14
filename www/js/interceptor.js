@@ -25,7 +25,7 @@ angular.module('interceptors', [])
             }
 
             $rootScope.$broadcast('loading:hide');
-            return $q.reject(rejection);
+            return rejection;
         }
     };
   });

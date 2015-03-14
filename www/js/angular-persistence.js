@@ -39,16 +39,16 @@ angular.module('ngPersistence', ['ngEnv'])
   function modelFactory(name, extras, prefetchs) {     
     var Entity = $db.model(name);
 
-    var _all = Entity.all().filter('sync', '<>', 'TRASH');
+    var _all = Entity.all();
     if(prefetchs !== undefined) {
       angular.forEach(prefetchs, function(p) {
         _all = _all.prefetch(p);
       });
     };
     var defaults = {
-      all: function() {
+      all: function(full) {
         var deferred = $q.defer();
-        _all.list(function(list) {
+        (full ? _all : _all.filter('sync', '<>', 'TRASH')).list(function(list) {
           deferred.resolve(list);
         });
         return deferred.promise;
@@ -56,7 +56,7 @@ angular.module('ngPersistence', ['ngEnv'])
 
       first: function() {
         var deferred = $q.defer();
-        Entity.all().limit(1).list(function(list) {
+        _all.limit(1).list(function(list) {
           deferred.resolve(list[0]);
         });
         return deferred.promise;
@@ -192,34 +192,53 @@ angular.module('ngPersistence', ['ngEnv'])
     });
 
     var self = {
-      sendAll: function() {
-        var deferred = $q.defer();        
+      findAll: function() {
+        var deferred = $q.defer();
+
         Model.filter('sync', 'IN', ['NEW', 'DIRTY', 'TRASH']).then(function(array) {
           var instances = [];
-          angular.forEach(array, function(item) {
-            item = out === undefined ? JSON.decycle(item) : out.call(this, item);
-            var black = ['_session', '_data', '_data_obj', 'subscribers', '_new', '_dirtyProperties', '_type'];
-            for(var i in black) {
-                delete item[black[i]];
-            }
-            this.push(item);          
-          }, instances);
-          if(instances.length > 0) {
-            Service.save(instances, function(result) {
-              angular.forEach(array, function(item) {
-                if(item.sync === 'NEW' || item.sync === 'DIRTY') {
-                  item.sync = 'OK';
-                  persistence.flush(function() {});
-                }
+          array.forEach(function(item) {
+            if(out === undefined) {
+              item.selectJSON(['*'], function(result) {
+                instances.push(result);
               });
-              deferred.resolve(true);  
-            }, function(result) {
-              deferred.reject(result);
-            });
+            }
+            else {
+              instances.push(out.call(this, item));
+            }
+          });
+          setTimeout(function() {
+            deferred.resolve(instances);
+          }, 500);
+        });
+        return deferred.promise;
+      },
+
+      sendAll: function() {
+        var deferred = $q.defer();        
+
+        self.findAll().then(function(result) {
+          if(result.length > 0) {
+            return Service.save(result);
           }
           else {
-            deferred.resolve(true);
+            return result;
           }
+        }).then(function(result) {
+          if(result.$resolved) {
+            angular.forEach(result, function(item) {
+              if(item.sync === 'NEW' || item.sync === 'DIRTY') {
+                item.sync = 'OK';
+                persistence.flush(function() {});
+              }
+            });
+            deferred.resolve(result);
+          }
+          else {
+            deferred.reject(result);
+          }
+        }).catch(function(result) {
+          deferred.reject(result);
         });
         return deferred.promise;
       },
@@ -231,24 +250,25 @@ angular.module('ngPersistence', ['ngEnv'])
             item.sync = 'OK';
             Model.save(parse_in === undefined ? item : parse_in.call(this, item));
           });
-          deferred.resolve(true);
+          deferred.resolve(array);
         }, function(result) {
           deferred.reject(result);
         });
         return deferred.promise;
-      },
-
-      exec: function() {
-        var deferred = $q.defer();
-        self.sendAll().then(function() {
-          self.receiveAll().then(function() {
-            deferred.resolve(true);
-          });
-        });
-        return deferred.promise;
       }
     };
-    return self;
+    
+    return function() {
+      var deferred = $q.defer();
+      self.sendAll()
+      .then(self.receiveAll)
+      .then(function(result) {
+        deferred.resolve(result);
+      }).catch(function(result) {
+        deferred.reject(result);
+      });
+      return deferred.promise;
+    };
   };
 
   return sync;

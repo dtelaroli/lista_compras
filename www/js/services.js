@@ -233,14 +233,15 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     exec: function() {
       var deferred = $q.defer();
             
-      ProductSync().then(ListSync)
-      .then(ListProductSync)
-      .then(ShareSync)
-      .then(function(result) {
-        deferred.resolve(result);
-      }).catch(function(result) {
-        deferred.reject(result);
-      });
+      ProductSync()
+        .then(ListSync)
+        .then(ListProductSync)
+        .then(ShareSync)
+        .then(function(result) {
+          deferred.resolve(result);
+        }).catch(function(result) {
+          deferred.reject(result);
+        });
       return deferred.promise;
     }
   };

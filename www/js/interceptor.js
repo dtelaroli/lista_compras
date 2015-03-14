@@ -1,32 +1,32 @@
 angular.module('interceptors', [])
     
 .config(function($httpProvider) {
-  $httpProvider.interceptors.push(function($rootScope) {
+  $httpProvider.interceptors.push(function($q, $rootScope) {
     return {
-        request: function(config) {
-          $rootScope.$broadcast('loading:show')
-            return config
-        },
-        response: function(response) {
-            $rootScope.$broadcast('loading:hide')
-            return response
-        },
-        responseError: function(rejection) {
-            switch(rejection.status) {
-            case  200:
-                break;
+      request: function(config) {
+        $rootScope.$broadcast('loading:show')
+        return config;
+      },
+      response: function(response) {
+        $rootScope.$broadcast('loading:hide')
+        return response;
+      },
+      responseError: function(rejection) {
+        switch(rejection.status) {
+        case  200:
+            break;
 
-            case 401:
-                $rootScope.$broadcast('http:401');
-                break;
+        case 401:
+            $rootScope.$broadcast('http:401');
+            break;
 
-            default:
-                $rootScope.$broadcast('http:error', rejection);
-            }
-
-            $rootScope.$broadcast('loading:hide');
-            return rejection;
+        default:
+            $rootScope.$broadcast('http:error', rejection);
         }
+
+        $rootScope.$broadcast('loading:hide');
+        return $q.reject(rejection);
+      }
     };
   });
 })

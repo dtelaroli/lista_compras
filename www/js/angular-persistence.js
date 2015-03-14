@@ -219,24 +219,24 @@ angular.module('ngPersistence', ['ngEnv'])
 
         self.findAll().then(function(result) {
           if(result.length > 0) {
-            return Service.save(result);
-          }
-          else {
-            return result;
-          }
-        }).then(function(result) {
-          if(result.$resolved) {
-            angular.forEach(result, function(item) {
-              if(item.sync === 'NEW' || item.sync === 'DIRTY') {
-                item.sync = 'OK';
-                persistence.flush(function() {});
+            Service.save(result, function(result) {
+              if(result.errors === undefined) {
+                angular.forEach(result, function(item) {
+                  if(item.sync === 'NEW' || item.sync === 'DIRTY') {
+                    item.sync = 'OK';
+                    persistence.flush(function() {});
+                  }
+                });
+                deferred.resolve(result);
+              }
+              else {
+                deferred.reject(result);
               }
             });
-            deferred.resolve(result);
+            return deferred.promise;
           }
-          else {
-            deferred.reject(result);
-          }
+          deferred.resolve(true);
+          return deferred.promise;
         }).catch(function(result) {
           deferred.reject(result);
         });
@@ -260,13 +260,15 @@ angular.module('ngPersistence', ['ngEnv'])
     
     return function() {
       var deferred = $q.defer();
+      var error = function(result) {
+        deferred.reject(result);
+      };
+
       self.sendAll()
       .then(self.receiveAll)
       .then(function(result) {
         deferred.resolve(result);
-      }).catch(function(result) {
-        deferred.reject(result);
-      });
+      }).catch(error);
       return deferred.promise;
     };
   };

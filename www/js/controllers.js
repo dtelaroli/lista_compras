@@ -99,7 +99,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
         });
         $scope.list = list;        
       });
-
     },
 
     products: function(lproducts) {
@@ -189,31 +188,29 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
     create: function(response) {
       $scope.account.save(response);
       self.confirm();
+    },
+
+    error: function(response) {
+      $scope.$emit('app:error', response.data);
     }
   };
 
   $scope.google = function() {
     $auth.authenticate('google').then(function(response) {
       self.create(response);
-    }, function(response) { 
-      $scope.$emit('app:error', response);
-    });
+    }, self.error);
   };
 
   $scope.facebook = function() {
     $auth.authenticate('facebook').then(function(response) { 
       self.create(response);
-    }, function(response) { 
-      $scope.$emit('app:error', response);
-    });
+    }, self.error);
   };
 
   $scope.login = function() {
     auth.login().then(function(response) {
       self.create(response);
-    }, function(response) { 
-      $scope.$emit('app:error', response);
-    });
+    }, self.error);
   }
 
   $scope.sync = function() {
@@ -221,7 +218,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
       self.confirm(function() {
         $scope.$emit('list:changed');
       });
-    });
+    }, self.error);
   };
 
   $scope.reset = function() {

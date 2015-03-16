@@ -21,7 +21,7 @@ angular.module('interceptors', [])
             break;
 
         default:
-            $rootScope.$broadcast('http:error', rejection);
+            $rootScope.$broadcast('app:error', rejection.data);
         }
 
         $rootScope.$broadcast('loading:hide');
@@ -43,7 +43,7 @@ angular.module('interceptors', [])
   $rootScope.$on('app:error', function(event, rejection) {
     $ionicPopup.alert({
       title: 'Erro',
-      template: rejection.errors.join('<br />')
+      template: rejection === null ? 'Erro' : rejection.errors.join('<br />')
     });
   });
 });

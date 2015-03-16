@@ -209,7 +209,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
 
   $scope.login = function() {
     auth.login().then(function(response) {
-      console.log(response)
       self.create(response);
     }, self.error);
   }

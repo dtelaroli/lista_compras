@@ -287,7 +287,7 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
 
 
     this.login = function() {
-      if($window.cordova) {
+      if(window.cordova) {
         var deferred = $q.defer();
         var browserWindow = $window.open(_this.authUrl, '_blank', 'location=no');
 

@@ -191,7 +191,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
     },
 
     error: function(response) {
-      $scope.$emit('app:error', response.data);
+      $scope.$emit('app:error', response);
     }
   };
 

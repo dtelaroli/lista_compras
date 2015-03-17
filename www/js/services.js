@@ -277,25 +277,21 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
   }
 })
 
-.service('authService', ['$rootScope', '$http', '$stateParams', '$q', '$location', '$window', '$auth',
-  function ($rootScope, $http, $stateParams, $q, $location, $window, $auth) {
-    var APIURL = 'http://dtelaroli.org';
+.service('authService', ['$rootScope', '$http', '$stateParams', '$q', '$location', '$window', '$auth', '$env',
+  function ($rootScope, $http, $stateParams, $q, $location, $window, $auth, $env) {
+    var APIURL = $env('PROTOCOL') + '://' + $env('ENDPOINT');
     var _this = this;
 
-    //stubUrl to get around angular url '#' check on the backend (via devise_token_auth)
     this.stubUrl = "http://localhost:8100/#/tab/account";
     this.authUrl = APIURL + '/auth/google_oauth2/?auth_origin_url=' + _this.stubUrl;
 
 
     this.login = function() {
-      if(window.cordova) {
+      if($window.cordova) {
         var deferred = $q.defer();
-        //open IAB window
         var browserWindow = $window.open(_this.authUrl, '_blank', 'location=no');
 
-        // listen for IAB window finish loading
         browserWindow.addEventListener( "loadstop", function() {
-          //grab linkedin authcode from url response
           getAuthCodeFromResponse(browserWindow)
             .then(function(success){
               deferred.resolve(success);
@@ -310,9 +306,7 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
       }
     }
 
-    // function called when the browser is closed
     function browserOnClose (output){
-//      get code from response url
       var out = output.response[0].replace(/\n/gm, "").replace(/.+>(.+)<\/p>.+/gm, "{$1}");
       var json = angular.fromJson(out);
       $auth.initDfd();
@@ -322,20 +316,14 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
 
     function getAuthCodeFromResponse(browserWindow){
       var deferred = $q.defer();
-      // we get the url everythime the page loads
       browserWindow.executeScript({code: "document.URL" },
 
-        //that url is passed to this function
         function( url ) {
           var _url = url.toString();
 
-          // we check if the callback page was reached
           if(_url.indexOf("callback") > -1){
-            // the callback page was reached therefore it contains the json output returned from the server
-            // we parse the html page to strip out the html tags and keep the json string
             browserWindow.executeScript({code: "document.body.innerHTML" }, function(response){
               browserWindow.close();
-              // we close the window and call this function with the url and the json output
               var user = browserOnClose({url: url, response: response});
               deferred.resolve(user);   
             });

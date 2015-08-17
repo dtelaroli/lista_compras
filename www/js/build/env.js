@@ -3,7 +3,7 @@ angular.module('ngEnv', [])
 .service('$env', function() {
   var self = {
   	PROTOCOL: 'http',
-    ENDPOINT: 'dtelaroli.org',
+    ENDPOINT: 'localhost:3000',
   };
 
   return function(name) {

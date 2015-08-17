@@ -3,7 +3,8 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
 .config(function($authProvider, $envProvider) {
   $env = $envProvider.$get();
   $authProvider.configure({
-      apiUrl: $env('PROTOCOL') + '://' + $env('ENDPOINT')
+      apiUrl: $env('PROTOCOL') + '://' + $env('ENDPOINT'),
+      omniauthWindowType: window.cordova == undefined ? 'newWindow' : 'inAppBrowser'
   });
 })
 
@@ -162,8 +163,8 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'AccountService', 'SyncService', '$auth', 'authService',
-    function($scope, $db, $ionicPopup, AccountService, SyncService, $auth, auth) {
+.controller('AccountCtrl', ['$scope', '$db', '$ionicPopup', 'AccountService', 'SyncService', '$auth',
+    function($scope, $db, $ionicPopup, AccountService, SyncService, $auth) {
   $scope.settings = {
     enableFriends: true
   };
@@ -206,12 +207,6 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
       self.create(response);
     }, self.error);
   };
-
-  $scope.login = function() {
-    auth.login().then(function(response) {
-      self.create(response);
-    }, self.error);
-  }
 
   $scope.sync = function() {
     SyncService.exec().then(function(response) {

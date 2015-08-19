@@ -2,8 +2,8 @@ angular.module('ngEnv', [])
 
 .service('$env', function() {
   var self = {
-  	PROTOCOL: 'http',
-    ENDPOINT: 'localhost:3000',
+  	PROTOCOL: 'https',
+    ENDPOINT: 'warm-dusk-4656.herokuapp.com:',
   };
 
   return function(name) {

@@ -8,7 +8,7 @@ angular.module('interceptors', [])
         return config;
       },
       response: function(response) {
-        $rootScope.$broadcast('loading:hide')
+        $rootScope.$broadcast('loading:hide');
         return response;
       },
       responseError: function(rejection) {
@@ -25,6 +25,7 @@ angular.module('interceptors', [])
         }
 
         $rootScope.$broadcast('loading:hide');
+        return rejection;
       }
     };
   });

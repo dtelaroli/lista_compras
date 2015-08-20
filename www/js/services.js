@@ -158,8 +158,6 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
     },
 
     save: function(account) {
-      console.log(account.name)
-      console.log(account.image)
       var deferred = $q.defer();
       Account.save(account, function(account) {
         self.set(account);
@@ -188,7 +186,7 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
 .service('SyncService', ['$q', '$sync', 'List', 'ListProduct', function($q, $sync, List, ListProduct) {
   var ListSync = $sync('List', 'lists');
   var ProductSync = $sync('Product', 'products');
-  var ListProductSync = $sync('ListProduct', 'list_products', function(object) {
+  var ListProductSync = $sync('ListProduct', 'lists_products', function(object) {
     return {
       id: object.id,
       list: object.list_id,

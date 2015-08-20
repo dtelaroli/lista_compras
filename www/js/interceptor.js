@@ -25,7 +25,6 @@ angular.module('interceptors', [])
         }
 
         $rootScope.$broadcast('loading:hide');
-        return $q.reject(rejection);
       }
     };
   });
@@ -41,7 +40,6 @@ angular.module('interceptors', [])
   });
 
   $rootScope.$on('app:error', function(event, rejection) {
-    console.log(rejection)
     var errors = ['Erro desconhecido'];
     if(rejection !== undefined) {
       errors = rejection.data === undefined ? rejection.errors : rejection.data.errors

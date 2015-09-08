@@ -4,7 +4,8 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
   $env = $envProvider.$get();
   $authProvider.configure({
       apiUrl: $env('PROTOCOL') + '://' + $env('ENDPOINT'),
-      omniauthWindowType: window.cordova == undefined ? 'newWindow' : 'inAppBrowser'
+      omniauthWindowType: window.cordova == undefined ? 'newWindow' : 'inAppBrowser',
+      storage: 'localStorage'
   });
 })
 

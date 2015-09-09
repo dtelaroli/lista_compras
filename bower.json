@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "ng-token-auth": "~0.0.28",
-    "angular-resource": "~1.4.4",
+    "angular-resource": "~1.4.3",
     "JSON-js": "*",
     "persistence": "~0.3.0"
   }

@@ -34,6 +34,5 @@
     "tag": "0.3.0",
     "commit": "4ecb3aebcf8f83372980acdc11fa323aabf32aec"
   },
-  "_originalSource": "persistence",
-  "_direct": true
+  "_originalSource": "persistence"
 }

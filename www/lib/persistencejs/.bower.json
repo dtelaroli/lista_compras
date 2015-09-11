@@ -1,0 +1,15 @@
+{
+  "name": "persistencejs",
+  "homepage": "https://github.com/rafanami/persistencejs",
+  "version": "0.2.4",
+  "_release": "0.2.4",
+  "_resolution": {
+    "type": "version",
+    "tag": "v0.2.4",
+    "commit": "0858b355788e739caf3870c36e359e12efe27fcf"
+  },
+  "_source": "git://github.com/rafanami/persistencejs.git",
+  "_target": "~0.2.4",
+  "_originalSource": "persistencejs",
+  "_direct": true
+}

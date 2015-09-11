@@ -1,0 +1,47 @@
+<ion-view view-title="Listas de Compras">
+  <ion-content>    
+    <form name="form" ng-submit="add()">
+      <ion-list>
+        <ion-item class="item-input-inset">
+          <label class="item-input-wrapper">
+            <input type="text" placeholder="Nome da Lista" ng-model="list.name" required>
+          </label>
+          <button class="button button-small" ng-disabled="list.name == null">
+            Criar Lista
+          </button>      
+        </ion-item>
+      </ion-list>
+    </form>
+    <br />
+
+    <ion-list class="lists">
+      <ion-item ng-show="list.shared === undefined" class="item-avatar item-remove-animate item-icon-right" type="item-text-wrap" ng-repeat="list in lists.data" 
+        href="#/tab/lists/{{list.id}}">
+        <img ng-src="{{account.data.image}}">
+        <h2>{{list.name}}</h2>
+        <p>{{list.created_at | date:'medium'}}</p>
+        <ion-option-button class="button-positive" ng-click="share(list)">
+          Compartilhar
+        </ion-option-button>
+        <ion-option-button class="button-energized" ng-click="archive(list)">
+          Arquivar
+        </ion-option-button>
+        <ion-option-button class="button-assertive" ng-click="remove(list)">
+          Apagar
+        </ion-option-button>
+      </ion-item>
+      <ion-item ng-show="list.shared !== undefined" class="item-avatar item-remove-animate item-icon-right" type="item-text-wrap" ng-repeat="list in lists.data" 
+        href="#/tab/lists/{{list.id}}">
+        <img ng-src="{{list.shared.user_image}}">
+        <h2>{{list.name}}</h2>
+        <p>{{list.created_at | date:'medium'}}</p>
+        <ion-option-button class="button-energized" ng-click="archive(list)">
+          Arquivar
+        </ion-option-button>
+        <ion-option-button class="button-assertive" ng-click="remove(list)">
+          Apagar
+        </ion-option-button>
+      </ion-item>
+    </ion-list>        
+  </ion-content>
+</ion-view>

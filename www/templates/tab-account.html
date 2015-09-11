@@ -1,17 +1,43 @@
-<ion-view view-title="Account">
+<ion-view view-title="Informações da Conta">
   <ion-content>
     <ion-list>
-    <ion-toggle  ng-model="settings.enableFriends">
+      <!-- <ion-item class="item-toggle">
         Enable Friends
-    </ion-toggle>
-    <ion-item>{{user.email}}</ion-item>
-    <button ng-click="google()" ng-show="user == null" class="button button-full">
+        <label class="toggle">
+          <input type="checkbox" ng-model="settings.enableFriends">
+          <div class="track">
+            <div class="handle"></div>
+          </div>
+        </label>
+      </ion-item> -->
+    </ion-list>
+    <div class="padding">
+      <p ng-if="account.state === 'Unsigned'">
+        Faça login para você poder compartilhar suas listas e salvar na núvem.
+      </p>
+
+      <div ng-if="account.state === 'Signed'">
+        <p>Ola {{account.data.name}}!</p>
+        <p>Sua conta está ativa.</p>
+      </div>
+    </div>
+
+    <button ng-click="facebook()" ng-if="account.state === 'Unsigned'" class="button button-full">
+      Login com Facebook
+    </button>
+    <button ng-click="google()" ng-if="account.state === 'Unsigned'" class="button button-full">
       Login com Google
     </button>
-    <button ng-click="logout()" ng-hide="user == null" class="button button-full">
-      Logout
+
+    <!-- <button ng-click="login()" ng-if="account.state === 'Unsigned'" class="button button-full">
+      Login com Google2
+    </button> -->
+    <button ng-click="sync()" ng-if="account.state === 'Signed'" class="button button-full">
+      Sincronizar com o servidor
     </button>
-    <button ng-click="validate()" class="button button-full">Validate</button>
-    </ion-list>
+
+    <button ng-click="reset()" class="button button-full button-assertive">
+      Limpar todos os dados
+    </button>
   </ion-content>
 </ion-view>

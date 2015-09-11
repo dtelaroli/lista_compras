@@ -1,1 +1,38 @@
 /* Empty. Add your own CSS if you like */
+
+.item-checkbox-right .checkbox input,
+.item-checkbox-right .checkbox-icon {
+  float: right;
+}
+
+.item-checkbox.item-checkbox-right {
+  /*the default item padding*/
+  padding: 15px;
+}
+
+.autocomplete {
+	background-color: #efefef; 
+	padding: 5px; 
+	text-align: center;
+	color: #666;
+}
+
+.item-toggle-option .toggle {
+	position: absolute;
+	top: 8px;
+	right: 16px;
+	z-index: 3;
+}
+
+.capitalize {
+  text-transform: capitalize;
+}
+
+.lists .item-avatar .item-content > img:first-child {
+	left: auto;
+	right: 16px;
+}
+
+.lists .item-avatar .item-content {
+	padding-left: 16px;
+}

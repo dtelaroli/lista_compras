@@ -2,10 +2,11 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
 
 .config(function($authProvider, $envProvider) {
   $env = $envProvider.$get();
+  var isMob = window.cordova != undefined;
   $authProvider.configure({
       apiUrl: $env('PROTOCOL') + '://' + $env('ENDPOINT'),
-      omniauthWindowType: window.cordova == undefined ? 'newWindow' : 'inAppBrowser',
-      storage: 'localStorage'
+      omniauthWindowType: isMob ? 'inAppBrowser' : 'newWindow',
+      storage: isMob ? 'localStorage' : 'cookies'
   });
 })
 
@@ -210,7 +211,7 @@ angular.module('starter.controllers', ['ng-token-auth', 'ngEnv', 'interceptors']
   };
 
   $scope.sync = function() {
-    SyncService.exec().then(function(response) {
+    SyncService.run().then(function(response) {
       self.confirm(function() {
         $scope.$emit('list:changed');
       });

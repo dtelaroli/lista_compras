@@ -183,69 +183,19 @@ angular.module('starter.services', ['ngPersistence', 'ngResource', 'ngEnv'])
   return self;
 }])
 
-.service('SyncService', ['$q', '$sync', 'List', 'ListProduct', function($q, $sync, List, ListProduct) {
-  var ListSync = $sync('List', 'lists');
-  var ProductSync = $sync('Product', 'products');
-  var ListProductSync = $sync('ListProduct', 'lists_products', function(object) {
-    return {
-      id: object.id,
-      list: object.list_id,
-      product: object.product_id,
-      ok: object.ok
-    };
-  }, function(object) {
-    return {
-      id: object.id,
-      list_id: object.list.id,
-      product_id: object.product.id,
-      ok: object.ok
-    };
-  });
-  var ShareSync = $sync('Share', 'shares', function(object) {
-    object.list.sync = 'OK';
-    List.save(object.list);
-    angular.forEach(object.list_products, function(lp) {
-      ListProduct.save({
-        id: lp.id,
-        list: lp.list_id,
-        product: lp.product_id,
-        ok: lp.ok,
-        sync: 'OK'
-      });
-    });
-    return {
-      user_id: object.by.id,
-      user_name: object.by.name,
-      user_image: object.by.image,
-      list: object.list.id,
-      created_at: object.created_at,
-      sync: 'OK'
-    }
-  }, function(object) {
-    return {
-      user_id: object.user_id,
-      list_id: object.list.id,
-      created_at: object.created_at
-    }
-  });
-
+.service('SyncService', ['$q', 'List', 'ListProduct', function($q, List, ListProduct) {
   var self = {
-    exec: function() {
+    run: function() {
       var deferred = $q.defer();
-            
-      ProductSync()
-        .then(ListSync)
-        .then(ListProductSync)
-        .then(ShareSync)
-        .then(function(result) {
-          deferred.resolve(result);
-        }).catch(function(result) {
-          deferred.reject(result);
-        });
+      List.sync('http://localhost:3000/lists.json').then(function(foo) {
+        console.log(foo);
+      }).catch(function(error) {
+        console.error(error);
+      });
       return deferred.promise;
     }
   };
-  
+
   return self;
 }])
 
